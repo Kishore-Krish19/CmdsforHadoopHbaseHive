@@ -81,3 +81,523 @@ SET hive.compactor.initiator.on=true;
 SET hive.compactor.worker.threads=1;
 
 ###############################################################
+@@@@@@
+MapReduce program steps
+idha ella mapreduce kum follow panikkalam
+general format
+1)Start HDFS daemons:
+->start-dfs.sh
+Start YARN daemons:
+->start-yarn.sh
+Verify services are running:
+->jps
+2)Ensure Java 8 is used
+Hadoop 3.x works best with Java 8. Check and configure:
+->java -version
+3)Map reduce la input file create pannanum
+a)wordcount program
+  ->nano input.txt
+text file ulla
+->Hadoop is awesome
+  Hadoop is fast
+  Razith loves Hadoop
+Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+b)charactercount program
+
+  ->nano words.txt
+
+text file ulla
+->Hadoop is fast
+  Data Science
+  Big Data
+Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+c)Multiply two numbers
+
+  ->nano numbers.txt
+
+text file ulla
+->4 5
+Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+d)Addition two numbers
+
+  ->nano numbers.txt
+
+text file ulla
+ ->7 8
+Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+e)Matrix Multiplication
+(2 input files)
+ ->nano matrixA.txt
+ ->nano matrixB.txt
+
+textfile1 ulla
+->A,0,0,1
+  A,0,1,2
+  A,1,0,3
+  A,1,1,4
+textfile2 ulla
+->B,0,0,5
+  B,0,1,6
+  B,1,0,7
+  B,1,1,8
+Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+4)Main java program writing
+
+a) ->nano WordCount.java
+
+import java.io.IOException;
+import java.util.StringTokenizer;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class WordCount {
+
+    // Mapper Class
+    public static class TokenizerMapper extends Mapper<Object, Text, Text, IntWritable> {
+        private final static IntWritable one = new IntWritable(1);
+        private Text word = new Text();
+
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            StringTokenizer itr = new StringTokenizer(value.toString());
+            while (itr.hasMoreTokens()) {
+                word.set(itr.nextToken());
+                context.write(word, one); // Emit (word, 1)
+            }
+        }
+    }
+
+    // Reducer Class
+    public static class IntSumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        private IntWritable result = new IntWritable();
+
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable val : values) {
+                sum += val.get();
+            }
+            result.set(sum);
+            context.write(key, result); // Emit (word, total count)
+        }
+    }
+
+    // Driver Code
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "word count");
+        job.setJarByClass(WordCount.class);
+        job.setMapperClass(TokenizerMapper.class);
+        job.setCombinerClass(IntSumReducer.class);
+        job.setReducerClass(IntSumReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+b) -> nano CharCount.java
+
+
+import java.io.IOException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class CharCount {
+
+    public static class CharCountMapper extends Mapper<Object, Text, Text, IntWritable> {
+        private Text word = new Text();
+
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] words = value.toString().split("\\s+"); // Split on spaces
+            for (String w : words) {
+                if (!w.isEmpty()) {
+                    word.set(w);
+                    context.write(word, new IntWritable(w.length())); // Word → Length
+                }
+            }
+        }
+    }
+
+    public static class CharCountReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            // Since each word has only one length value, pick the first
+            for (IntWritable val : values) {
+                context.write(key, val);
+                break;
+            }
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Character Count Per Word");
+        job.setJarByClass(CharCount.class);
+        job.setMapperClass(CharCountMapper.class);
+        job.setReducerClass(CharCountReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+c) ->nano MultiplyNumbers.java
+
+
+import java.io.IOException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class MultiplyNumbers {
+
+    // Input format (each line): "<a> <b>"
+    // Example: "4 5"
+    public static class MultiplyMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+        private static final Text PRODUCT_KEY = new Text("Product");
+
+        @Override
+        protected void map(LongWritable key, Text value, Context context)
+                throws IOException, InterruptedException {
+            String line = value.toString().trim();
+            if (line.isEmpty()) return;
+
+            // Allow separators: space, comma, or tab
+            String[] parts = line.split("[,\\s]+");
+            if (parts.length >= 2) {
+                try {
+                    int a = Integer.parseInt(parts[0]);
+                    int b = Integer.parseInt(parts[1]);
+                    context.write(PRODUCT_KEY, new IntWritable(a * b));
+                } catch (NumberFormatException ignore) {
+                    // skip malformed lines
+                }
+            }
+        }
+    }
+
+    // Reducer: if multiple lines exist, combine (sum) their products
+    public static class SumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        @Override
+        protected void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            int sum = 0;
+            for (IntWritable v : values) sum += v.get();
+            context.write(key, new IntWritable(sum));
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Multiply Two Numbers");
+        job.setJarByClass(MultiplyNumbers.class);
+        job.setMapperClass(MultiplyMapper.class);
+        job.setReducerClass(SumReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+d) -> nano AddNumbers.java
+
+
+import java.io.IOException;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class AddNumbers {
+
+    // Input format (each line): "<a> <b>"
+    // Example: "7 8"
+    public static class AddMapper extends Mapper<LongWritable, Text, Text, IntWritable> {
+        private static final Text SUM_KEY = new Text("Sum");
+
+        @Override
+        public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
+            String line = value.toString().trim();
+            if (line.isEmpty()) return;
+
+            // Allow separators like space, comma, or tab
+            String[] parts = line.split("[,\\s]+");
+            if (parts.length >= 2) {
+                try {
+                    int a = Integer.parseInt(parts[0]);
+                    int b = Integer.parseInt(parts[1]);
+                    context.write(SUM_KEY, new IntWritable(a + b));
+                } catch (NumberFormatException ignore) {
+                    // skip invalid input
+                }
+            }
+        }
+    }
+
+    // Reducer: if multiple lines exist, combine (sum) their results
+    public static class SumReducer extends Reducer<Text, IntWritable, Text, IntWritable> {
+        @Override
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
+            int total = 0;
+            for (IntWritable v : values) total += v.get();
+            context.write(key, new IntWritable(total));
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Add Two Numbers");
+        job.setJarByClass(AddNumbers.class);
+        job.setMapperClass(AddMapper.class);
+        job.setReducerClass(SumReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(IntWritable.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+e) -> nano MatrixMultiply.java
+
+import java.io.IOException;
+import java.util.*;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+
+public class MatrixMultiply {
+
+    public static class MatrixMapper extends Mapper<Object, Text, Text, Text> {
+        public void map(Object key, Text value, Context context) throws IOException, InterruptedException {
+            String[] parts = value.toString().split(",");
+            String matrixName = parts[0];
+            int row = Integer.parseInt(parts[1]);
+            int col = Integer.parseInt(parts[2]);
+            int val = Integer.parseInt(parts[3]);
+            
+            if (matrixName.equals("A")) {
+                for (int k = 0; k < 2; k++) { // adjust for your matrix size
+                    context.write(new Text(row + "," + k), new Text("A," + col + "," + val));
+                }
+            } else if (matrixName.equals("B")) {
+                for (int i = 0; i < 2; i++) { // adjust for your matrix size
+                    context.write(new Text(i + "," + col), new Text("B," + row + "," + val));
+                }
+            }
+        }
+    }
+
+    public static class MatrixReducer extends Reducer<Text, Text, Text, IntWritable> {
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
+            HashMap<Integer, Integer> mapA = new HashMap<>();
+            HashMap<Integer, Integer> mapB = new HashMap<>();
+
+            for (Text val : values) {
+                String[] parts = val.toString().split(",");
+                if (parts[0].equals("A")) {
+                    mapA.put(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                } else if (parts[0].equals("B")) {
+                    mapB.put(Integer.parseInt(parts[1]), Integer.parseInt(parts[2]));
+                }
+            }
+
+            int result = 0;
+            for (int k : mapA.keySet()) {
+                if (mapB.containsKey(k)) {
+                    result += mapA.get(k) * mapB.get(k);
+                }
+            }
+
+            context.write(key, new IntWritable(result));
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Configuration conf = new Configuration();
+        Job job = Job.getInstance(conf, "Matrix Multiply");
+        job.setJarByClass(MatrixMultiply.class);
+        job.setMapperClass(MatrixMapper.class);
+        job.setReducerClass(MatrixReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(args[0]));
+        FileOutputFormat.setOutputPath(job, new Path(args[1]));
+        System.exit(job.waitForCompletion(true) ? 0 : 1);
+    }
+}
+
+5) Create input folder
+
+a)wordcount program
+
+->hdfs dfs -mkdir -p /input_folder
+  hdfs dfs -put input.txt /input_folder
+
+b)charactercount program
+
+->hdfs dfs -mkdir -p /input_chars
+  hdfs dfs -put words.txt /input_chars
+
+c)multiply2nos
+
+->hdfs dfs -mkdir -p /input_mul
+  hdfs dfs -put -f numbers.txt /input_mul
+
+d)add2nos
+
+->hdfs dfs -mkdir -p /input_add
+  hdfs dfs -put -f numbers.txt /input_add
+
+e)matrixmultiply
+
+->hdfs dfs -mkdir -p /input_matrix
+  hdfs dfs -put matrixA.txt /input_matrix
+  hdfs dfs -put matrixB.txt /input_matrix
+
+6) compile and create jar
+
+a)wordcount
+
+->javac -classpath $(hadoop classpath) -d . WordCount.java
+->jar cf wordcount.jar WordCount*.class
+
+b)charcount
+
+->javac -classpath $(hadoop classpath) -d . CharCount.java
+->jar cf charcount.jar CharCount*.class
+
+c)multiply2nos
+
+->javac -classpath $(hadoop classpath) -d . MultiplyNumbers.java
+->jar cf multiplynumbers.jar MultiplyNumbers*.class
+
+d)add2nos
+
+->javac -classpath $(hadoop classpath) -d . AddNumbers.java
+->jar cf addnumbers.jar AddNumbers*.class
+
+e)Matrixmultiply
+
+->javac -classpath $(hadoop classpath) -d . MatrixMultiply.java
+->jar cf matrixmultiply.jar MatrixMultiply*.class
+
+7)Run job
+
+first time run panna continue with the code otherwise use (hdfs dfs -rm -r /output_folder)
+
+a)wordcount
+
+->hadoop jar wordcount.jar WordCount /input_folder /output_folder
+
+b)charcount
+
+->hadoop jar charcount.jar CharCount /input_chars /output_chars
+
+c)multiply2nos
+
+->hadoop jar multiplynumbers.jar MultiplyNumbers /input_mul /output_mul
+
+d)add2nos
+
+->hadoop jar addnumbers.jar AddNumbers /input_add /output_add
+
+e)matrixmultiply
+
+->hadoop jar matrixmultiply.jar MatrixMultiply /input_matrix /output_matrix
+
+
+8)view output
+
+a)wordcount
+
+->hdfs dfs -cat /output_folder/part-r-00000
+
+O/P:
+Hadoop	3
+Razith	1
+awesome	1
+fast	1
+is	2
+loves	1
+
+b)charcount
+->hdfs dfs -cat /output_chars/part-r-00000
+O/P
+Hadoop    6
+is        2
+fast      4
+Data      4
+Science   7
+Big       3
+
+c) multiply2no's
+
+->hdfs dfs -cat /output_mul/part-r-00000
+
+O/P:
+Product   20
+
+d) add2nos
+
+->hdfs dfs -cat /output_add/part-r-00000
+
+O/P:
+Sum	15
+
+e)matrixmultiply
+
+->hdfs dfs -cat /output_matrix/part-r-00000
+
+0/P:
+0,0  19
+0,1  22
+1,0  43
+1,1  50
