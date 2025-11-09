@@ -1,37 +1,26 @@
 #!/bin/bash
-
 # HBase installation
-
 # Check for hadoop version
 echo "Checking Hadoop version"
 hadoop version
-
 # This link is for 2.5.12
 echo "Downloading HBase tar file"
 wget https://dlcdn.apache.org/hbase/2.5.12/hbase-2.5.12-bin.tar.gz
-
 echo "Extracting and installing hbase"
 tar -xzvf hbase-2.5.12-bin.tar.gz
-
 echo "Move hbase to /usr/local/hbase"
 sudo mv hbase-2.5.12 /usr/local/hbase
-
 # nano ~/.bashrc
 echo "Setting HBase environmental variables..."
 # Set HBase Variables
 echo 'export HBASE_HOME=/usr/local/hbase' >> ~/.bashrc
 echo 'export PATH=$PATH:$HBASE_HOME/bin' >> ~/.bashrc
-
 source ~/.bashrc
 echo "HBase environment variables set."
-
 # nano $HBASE_HOME/conf/hbase-env.sh
-
 echo "Configure hbase-env.sh..."
-
 echo 'export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64' >> $HBASE_HOME/conf/hbase-env.sh
 echo 'export HBASE_MANAGES_ZK=true' >> $HBASE_HOME/conf/hbase-env.sh
-
 echo "Configure hbase-site.xml"
 # nano $HBASE_HOME/conf/hbase-site.xml
 cat <<EOL > $HBASE_HOME/conf/hbase-site.xml
@@ -52,4 +41,34 @@ start-all.sh
 echo "Starting HBase..."
 start-hbase.sh
 jps
+
+#########################
+Hadoop cmds
+
+hadoop namenode -format
+start-dfs.sh
+
+# $HADOOP_HOME/bin/hadoop fs == hdfs dfs
+$HADOOP_HOME/bin/hadoop fs -ls
+			   -ls -h
+			   -ls -d
+hdfs dfs -mkdir /user/input
+hdfs dfs -put /home/file.txt /user/input
+hdfs dfs -cat /user/output/outfile
+hdfs dfs -get /user/output/ /home/hdoop
+hdfs dfs -rm -r /demo
+hdfs dfs -mv /demo/hello.txt /demo/hello_moved.txt
+hdfs dfs -cp /demo/hello_moved.txt /demo/hello_copy.txt
+• hdfs dfs -chmod 755 /demo
+#check disk usage   >> summary -> -du -s
+• hdfs dfs -du /demo
+# Create Nested Directories
+• hdfs dfs -mkdir -p /projects/data/input
+• hdfs dfs -touchz /demo/emptyfile.txt # create empty file
+• hdfs dfs -appendToFile localfile.txt /demo/hello_moved.txt
+• hdfs dfs -get /demo/hello_moved.txt ~/Downloads/
+• hdfs dfs -test -e /demo/hello_moved.txt # testt file existance
+• hdfs dfs -chgrp -R supergroup /demo
+• hdfs dfs -du -h -v -R /demo # recursive disk usage
+#####################################################
 
