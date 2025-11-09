@@ -71,4 +71,13 @@ hdfs dfs -cp /demo/hello_moved.txt /demo/hello_copy.txt
 • hdfs dfs -chgrp -R supergroup /demo
 • hdfs dfs -du -h -v -R /demo # recursive disk usage
 #####################################################
+Hive cmds
+-- Enable ACID transactions
+SET hive.support.concurrency=true;
+SET hive.enforce.bucketing=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+SET hive.compactor.initiator.on=true;
+SET hive.compactor.worker.threads=1;
 
+###############################################################
