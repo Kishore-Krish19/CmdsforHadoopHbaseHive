@@ -79,9 +79,168 @@ SET hive.exec.dynamic.partition.mode=nonstrict;
 SET hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
 SET hive.compactor.initiator.on=true;
 SET hive.compactor.worker.threads=1;
+9)
+1,John,IT,50000
+2,Mary,HR,60000
+3,Steve,IT,55000
+4,Anna,Finance,70000
+5,Bob,HR,62000
+6,Linda,Finance,68000
+
+create table employees (
+     eid INT,
+     ename STRING,
+     eage INT,
+     edepartment STRING
+     )
+     ROW FORMAT DELIMITED
+     FIELDS TERMINATED BY ','
+     STORED AS TEXTFILE;
+
+LOAD DATA LOCAL INPATH '/home/student/employees.txt' INTO TABLE employees;
+
+select * from employees;
+
+13)DDL
+CREATE DATABASE mydb01;
+show databases;
+describe database mydb01;
+drop database mydb01 cascade;
+
+create table employee(
+id INT,
+salary FLOAT,
+name STRING
+)
+ROW FORMAT DELIMITED
+FIELDS TERMINATED BY ','
+STORED AS TEXTFILE;
+
+SHOW TABLES;
+
+DESCRIBE employee;
+
+DROP TABLE employee;
+
+ALTER TABLE employee RENAME TO emp;
+
+ALTER TABLE emp ADD COLUMNS (address STRING);
+
+ALTER TABLE emp REPLACE COLUMNS(id INT, salary FLOAT, name STRING);
+
+SELECT * from emp;
+
+14)dml
+
+-- Enable ACID transactions
+SET hive.support.concurrency=true;
+SET hive.enforce.bucketing=true;
+SET hive.exec.dynamic.partition.mode=nonstrict;
+SET hive.txn.manager=org.apache.hadoop.hive.ql.lockmgr.DbTxnManager;
+SET hive.compactor.initiator.on=true;
+SET hive.compactor.worker.threads=1;
+
+
+insert into table emp values(1,2345.8,'kaishore');
+
+
+select * from emp;
+select id, salary from emp;
+
+select * from emp where id=1;
+
+truncate table student;
+
+drop table emp;
+
+enable transactions set(not query)
+
+CREATE TABLE emp (
+        id INT,
+        name STRING,
+        department STRING,
+        salary FLOAT
+    )
+    CLUSTERED BY (id) INTO 2 BUCKETS
+    STORED AS ORC
+    TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO emp VALUES
+    (1, 'John', 'IT', 50000),
+    (2, 'Mary', 'HR', 60000),
+    (3, 'Steve', 'Finance', 55000);
+
+UPDATE emp SET salary = 70000 WHERE id = 2;
+
+DELETE FROM emp WHERE id = 3;
+
+SELECT * FROM emp;
+
+18)
+CREATE TABLE employee1 (
+    emp_id INT,
+    emp_name STRING,
+    age INT,
+    department STRING,
+    salary FLOAT
+    )
+    CLUSTERED BY (emp_id) INTO 3 BUCKETS
+    STORED AS ORC
+    TBLPROPERTIES ('transactional'='true');
+
+INSERT INTO employee1 VALUES
+(1, 'John', 30, 'IT', 55000.0),
+(2, 'Mary', 28, 'HR', 48000.0),
+(3, 'Steve', 35, 'Finance', 62000.0),
+(4, 'Alice', 32, 'Marketing', 50000.0),
+(5, 'David', 40, 'IT', 72000.0),
+(6, 'Nina', 29, 'HR', 51000.0);
+
+SELECT * FROM employee1;
+
+SELECT department, COUNT(*) AS total_employees
+    FROM employee1
+    GROUP BY department;
+
+SELECT * FROM employee1
+    WHERE salary > 50000;
+
+SELECT department, COUNT(*) AS total_employees
+    FROM employee1
+    GROUP BY department
+    HAVING COUNT(*) > 1;
+
+SELECT * FROM employee1
+    ORDER BY emp_id ASC;
+
+20)
+EXPORT TABLE employee1 TO '/home/student/add';
+
+IMPORT TABLE employee3 FROM '/home/student/add';
+
+select * from employee3;
+
+UPDATE employee1 SET salary = 72000 WHERE emp_id = 5;
+
+SELECT * FROM employee1 SORT BY salary DESC;
+
+SELECT * FROM employee1 DISTRIBUTE BY department;
+
+SELECT * FROM employee1 CLUSTER BY department;
 
 ###############################################################
-@@@@@@
+hbase cmds
+create 'customer', 'id', 'name'
+put 'customer', '1', 'id:rollno' , '23cse01'
+put 'customer', '1', 'name:regno' , '73'
+scan 'customer'
+get 'customer', '1'
+deleteall 'customer', '1'
+disable 'customer'
+drop 'customer'
+
+
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 MapReduce program steps
 idha ella mapreduce kum follow panikkalam
 general format
