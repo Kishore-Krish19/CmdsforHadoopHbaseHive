@@ -1,1 +1,1 @@
-# CmdsforHadoopHbaseHive
+#Hosted
