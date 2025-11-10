@@ -1,0 +1,721 @@
+##
+UDP1
+package UDPEcho1;
+import java.net.*; 
+public class UDPEchoServer { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket socket = new DatagramSocket(9876); 
+        byte[] buf = new byte[1024]; 
+        System.out.println("Server running..."); 
+        while (true) { 
+            DatagramPacket pkt = new DatagramPacket(buf, buf.length); 
+            socket.receive(pkt); 
+            String msg = new String(pkt.getData(), 0, pkt.getLength()); 
+            System.out.println("From client: " + msg); 
+            socket.send(new DatagramPacket(msg.getBytes(), msg.length(), 
+                    pkt.getAddress(), pkt.getPort())); 
+            if (msg.equalsIgnoreCase("bye")) break; 
+        } 
+        socket.close(); 
+    } 
+}
+##
+package UDPEcho1;
+
+import java.net.*;  
+import java.util.*; 
+public class UDPEchoClient { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket socket = new DatagramSocket(); 
+        InetAddress ip = InetAddress.getByName("localhost"); 
+        Scanner sc = new Scanner(System.in); 
+        byte[] buf = new byte[1024]; 
+        System.out.println("Client started. Type messages:"); 
+        while (true) { 
+            String msg = sc.nextLine(); 
+            socket.send(new DatagramPacket(msg.getBytes(), msg.length(), ip, 9876)); 
+            if (msg.equalsIgnoreCase("bye")) break; 
+            DatagramPacket pkt = new DatagramPacket(buf, buf.length); 
+            socket.receive(pkt); 
+            System.out.println("Echo: " + new String(pkt.getData(), 0, pkt.getLength())); 
+        } 
+        socket.close(); 
+    } 
+} 
+##
+2datagram
+package datagramchat2;
+
+import java.net.*; 
+import java.util.*; 
+public class Server { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket s = new DatagramSocket(); 
+        InetAddress ip = InetAddress.getByName("localhost"); 
+        Scanner sc = new Scanner(System.in); 
+        System.out.println("Server started, type messages:"); 
+        while (true) { 
+            String msg = sc.nextLine(); 
+            byte[] buf = msg.getBytes(); 
+            s.send(new DatagramPacket(buf, buf.length, ip, 9877)); 
+            if (msg.equalsIgnoreCase("bye")) break; 
+        } 
+        s.close(); 
+    } 
+}
+##
+package datagramchat2; 
+import java.net.*; 
+public class Client { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket s = new DatagramSocket(9877); 
+        byte[] buf = new byte[1024]; 
+        System.out.println("Client waiting for messages..."); 
+        while (true) { 
+            DatagramPacket p = new DatagramPacket(buf, buf.length); 
+            s.receive(p); 
+            String msg = new String(p.getData(), 0, p.getLength()); 
+            System.out.println("From Server: " + msg); 
+            if (msg.equalsIgnoreCase("bye")) break; 
+        } 
+        s.close(); 
+    } 
+} 
+##
+3UDP
+package UDPServerClient3;
+
+import java.util.*; 
+import java.net.*;  
+
+public class Server { 
+  public static void main(String[] a)throws Exception{ 
+    DatagramSocket s=new DatagramSocket(9876); 
+    Scanner sc=new Scanner(System.in); 
+    byte[] b=new byte[1024]; 
+    System.out.println("UDP Server:\n Type (bye) to end:");
+    while(true){ 
+      DatagramPacket p=new DatagramPacket(b,b.length); s.receive(p); 
+      String msg=new String(p.getData(),0,p.getLength()); 
+      System.out.println("Client: "+msg); 
+      if(msg.equalsIgnoreCase("bye"))break; 
+      String r=sc.nextLine(); 
+      s.send(new DatagramPacket(r.getBytes(),r.length(),p.getAddress(),p.getPort())); 
+      if(r.equalsIgnoreCase("bye"))break; 
+    } s.close(); 
+  } 
+} 
+##
+package UDPServerClient3;
+
+import java.net.*;  
+import java.util.*; 
+public class Client { 
+  public static void main(String[] a)throws Exception{ 
+    DatagramSocket s=new DatagramSocket(); 
+    System.out.println("UDP Client:");
+    InetAddress ip=InetAddress.getByName("localhost"); 
+    Scanner sc=new Scanner(System.in); 
+    byte[] b=new byte[1024]; 
+    while(true){ 
+      String msg=sc.nextLine(); 
+      s.send(new DatagramPacket(msg.getBytes(),msg.length(),ip,9876)); 
+      if(msg.equalsIgnoreCase("bye"))break; 
+      DatagramPacket p=new DatagramPacket(b,b.length); s.receive(p); 
+      String r=new String(p.getData(),0,p.getLength()); 
+      System.out.println("Server: "+r); 
+      if(r.equalsIgnoreCase("bye"))break; 
+    } s.close(); 
+  } 
+}
+##
+4UDP
+package UDPSerCli4;
+
+import java.net.*; 
+public class UDPServer { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket socket = new DatagramSocket(8888); 
+        byte[] buffer = new byte[100]; 
+        System.out.println("Server started. Waiting for client..."); 
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length); 
+        socket.receive(packet); 
+        String msg = new String(packet.getData(), 0, packet.getLength()); 
+        System.out.println("Client: " + msg); 
+        String reply = "Hello Client"; 
+        byte[] sendData = reply.getBytes(); 
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, 
+packet.getAddress(), packet.getPort()); 
+        socket.send(sendPacket); 
+        System.out.println("Reply sent to client."); 
+        socket.close(); 
+    } 
+}
+##
+package UDPSerCli4;
+
+import java.net.*; 
+public class UDPClient { 
+    public static void main(String[] args) throws Exception { 
+        DatagramSocket socket = new DatagramSocket(); 
+        InetAddress ip = InetAddress.getByName("localhost");  
+        String msg = "Hello Server"; 
+        byte[] sendData = msg.getBytes(); 
+        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ip, 8888); 
+        socket.send(sendPacket); 
+        byte[] buffer = new byte[100]; 
+        DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length); 
+        socket.receive(receivePacket); 
+        String reply = new String(receivePacket.getData(), 0, receivePacket.getLength()); 
+        System.out.println("Server: " + reply); 
+ 
+        socket.close(); 
+    } 
+}
+##
+5tcp
+package TCP5;
+import java.io.*; 
+import java.net.*; 
+public class TCPServer { 
+  public static void main(String[] a)throws Exception{ 
+      System.out.println("TCP Server Started...");
+      try (ServerSocket ss = new ServerSocket(8088); Socket s = ss.accept()) {
+          BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+          PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+          String fname=in.readLine();
+          File f=new File(fname);
+          if(f.exists()){
+              try (BufferedReader fr = new BufferedReader(new FileReader(f))) {
+                  String line;
+                  while((line=fr.readLine())!=null) out.println(line);
+              }
+          }else out.println("File not found");
+      }
+  } 
+} 
+##
+package TCP5;
+import java.io.*; 
+import java.net.*; 
+public class TCPClient { 
+public static void main(String[] a)throws Exception{ 
+    try (Socket s = new Socket("localhost",8088)) {
+        BufferedReader kb=new BufferedReader(new InputStreamReader(System.in));
+        PrintWriter out=new PrintWriter(s.getOutputStream(),true);
+        BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
+        System.out.print("Enter file name: ");
+        out.println(kb.readLine());
+        String line;
+        while((line=in.readLine())!=null) System.out.println(line);
+    } 
+} 
+} 
+##
+7Sliding
+package Sliding7;
+
+import java.util.*; 
+class SlidingWindow { 
+    public static void main(String[] args) { 
+        Scanner s = new Scanner(System.in); 
+        int w = 5, total; 
+        System.out.print("Enter total frames: "); //10
+        total = s.nextInt(); 
+        for (int i = 1; i <= total; i += w) { 
+            System.out.print("\nSending frames: "); 
+            for (int j = i; j < i + w && j <= total; j++) 
+                System.out.print(j + " "); 
+            System.out.print("\nAll acknowledged."); 
+        } 
+        System.out.println("\n\nAll frames sent!"); 
+    } 
+} 
+##
+8Broadcaster
+package Broadcaster8;
+
+import java.net.*; 
+public class Receiver { 
+public static void main(String[] args) throws Exception { 
+DatagramSocket socket = new DatagramSocket(9876); 
+byte[] buffer = new byte[1024]; 
+DatagramPacket packet = new DatagramPacket(buffer, buffer.length); 
+System.out.println("Waiting for broadcast..."); 
+socket.receive(packet); 
+System.out.println("Received: " + new String(packet.getData()).trim()); 
+socket.close(); 
+} 
+}
+##
+package Broadcaster8;
+import java.util.*;
+import java.net.*; 
+public class Broadcaster { 
+    public static void main(String[] args) throws Exception { 
+        try (DatagramSocket socket = new DatagramSocket()) {
+            socket.setBroadcast(true);
+            System.out.println("Enter the message to Broadcast:");
+            Scanner s=new Scanner(System.in);
+            String msg = s.nextLine();
+            DatagramPacket packet = new DatagramPacket(
+                    msg.getBytes(), msg.length(),
+                    InetAddress.getByName("255.255.255.255"), 9876);
+            socket.send(packet);
+            System.out.println("Broadcast message sent.");
+        } 
+    } 
+} 
+##
+9IProuting
+package IProuting9;
+
+import java.util.*; 
+class IPRouting { 
+    public static void main(String[] a) { 
+        Scanner s = new Scanner(System.in); 
+        String[][] table = { 
+            {"192.168.1", "Router A"}, 
+            {"192.168.2", "Router B"}, 
+            {"10.0.0",    "Router C"} 
+        }; 
+        System.out.print("Enter destination IP: "); 
+        String ip = s.next(); 
+        for (String[] t : table) 
+            if (ip.startsWith(t[0])) { 
+                System.out.println("Routed via " + t[1]); 
+                return; 
+} 
+System.out.println("No route found."); 
+} 
+} 
+##
+12Framing
+package FramingSimple12;
+
+import java.util.*; 
+public class FramingSimple { 
+public static void main(String args[]) { 
+Scanner sc = new Scanner(System.in); 
+System.out.print("Enter Data: "); 
+String data = sc.nextLine(); 
+// Character Count 
+String cc = (data.length() + 1) + data; 
+        // Character Stuffing (Flag = F, ESC = E) 
+        String cs = data.replace("E","EE").replace("F","EF"); 
+        cs = "F" + cs + "F"; 
+        // Bit Stuffing 
+        String bs = ""; 
+        int count = 0; 
+        for(char c : data.toCharArray()) { 
+            bs += c; 
+            if(c=='1') count++; 
+            else count = 0; 
+            if(count==5){ 
+                bs += "0"; 
+                count = 0; 
+            } 
+        } 
+        System.out.println("\nCharacter Count: " + cc); 
+        System.out.println("Character Stuffing: " + cs); 
+        System.out.println("Bit Stuffing: " + bs); 
+    } 
+}
+input : Hello
+##
+13Pingshort
+package PingShort13;
+
+public class PingShort { 
+    public static void main(String[] args) { 
+        int nodes = 6; 
+        int bufferLimit = 3; 
+        int packets = 10; 
+        int dropped = 0; 
+ 
+        for(int p=1; p<=packets; p++) { 
+            int load = (int)(Math.random()*5); // random traffic load 
+            if(load > bufferLimit) 
+                dropped++; 
+        } 
+ 
+        System.out.println("Total Packets Sent : " + packets); 
+        System.out.println("Packets Dropped    : " + dropped); 
+    } 
+} 
+##
+14datagram
+package datagramsocket14;
+
+import java.net.*; 
+import java.io.*; 
+public class Server { 
+public static void main(String[] args) throws Exception { 
+    try (DatagramSocket server = new DatagramSocket(5000)) {
+        BufferedReader br = new BufferedReader(new
+        java.io.InputStreamReader(System.in));
+        InetAddress clientIP = InetAddress.getLocalHost();
+        System.out.println("Server ready. Type messages to send:");
+        while (true) {
+            String msg = br.readLine();
+            byte[] data = msg.getBytes();
+            DatagramPacket packet = new DatagramPacket(data, data.length, clientIP, 6000);
+            server.send(packet);
+            if (msg.equalsIgnoreCase("bye")) break;
+        }
+    } 
+    } 
+}
+##
+package datagramsocket14;
+
+import java.net.*; 
+ 
+public class Client { 
+    public static void main(String[] args) throws Exception { 
+        try (DatagramSocket client = new DatagramSocket(6000)) {
+            byte[] buf = new byte[1024];
+            DatagramPacket packet = new DatagramPacket(buf, buf.length);
+            
+            System.out.println("Client waiting for messages...");
+            while (true) {
+                client.receive(packet);
+                String msg = new String(packet.getData(), 0, packet.getLength());
+                System.out.println("Server: " + msg);
+                if (msg.equalsIgnoreCase("bye")) break;
+            }
+        } 
+    } 
+}
+##
+15Subnet
+package Subnet15;
+
+import java.util.*;
+
+public class SubnetGraph {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of subnet nodes: ");
+        int n = sc.nextInt(), delay[][] = new int[n][n];
+        System.out.print("Enter number of links: ");
+        int e = sc.nextInt();
+
+        System.out.println("Enter links (src dest delay):");
+        for (int i = 0; i < e; i++) {
+            int a = sc.nextInt(), b = sc.nextInt(), d = sc.nextInt();
+            delay[a][b] = delay[b][a] = d;
+        }
+
+        System.out.println("Delay (in ms) between nodes:");
+        for (int[] row : delay) {
+            for (int val : row) {
+                System.out.print(val + "\t");
+            }
+            System.out.println();
+        }
+
+        System.out.print("\nEnter source node to find minimum delay: ");
+        int src = sc.nextInt();
+        int[] dist = new int[n];
+        boolean[] vis = new boolean[n];
+        Arrays.fill(dist, 9999);
+        dist[src] = 0;
+
+        for (int c = 0; c < n - 1; c++) {
+            int u = -1, min = 9999;
+            for (int i = 0; i < n; i++) {
+                if (!vis[i] && dist[i] < min) {
+                    min = dist[i];
+                    u = i;
+                }
+            }
+            vis[u] = true;
+            for (int v = 0; v < n; v++) {
+                if (!vis[v] && delay[u][v] > 0 && dist[u] + delay[u][v] < dist[v]) {
+                    dist[v] = dist[u] + delay[u][v];
+                }
+            }
+        }
+        System.out.println("\nMinimum delay from node " + src + ":");
+        for (int i = 0; i < n; i++) {
+            System.out.println("To node " + i + " = " + dist[i] + " ms");
+        }
+        sc.close();
+    }
+}
+
+/*
+Enter number of subnet nodes: 5
+Enter number of links: 5
+Enter links (src dest delay):
+1 2 3
+2 3 4
+1 4 5
+3 4 1
+4 3 2
+Delay (in ms) between nodes:
+0	0	0	0	0	
+0	0	3	0	5	
+0	3	0	4	0	
+0	0	4	0	2	
+0	5	0	2	0	
+
+Enter source node to find minimum delay: 2
+
+Minimum delay from node 2:
+To node 0 = 9999 ms
+To node 1 = 3 ms
+To node 2 = 0 ms
+To node 3 = 4 ms
+To node 4 = 6 ms
+*/
+##
+16PVR
+package PathVectorRouting16;
+
+import java.util.*;
+
+public class PathVectorRouting {
+
+    static class Route {
+
+        String dest;
+        List<String> path;
+        int cost;
+
+        Route(String d, List<String> p, int c) {
+            dest = d;
+            path = new ArrayList<>(p);
+            cost = c;
+        }
+    }
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Routers: ");
+        int n = sc.nextInt();
+        sc.nextLine(); // consume newline 
+        Map<String, List<Route>> table = new HashMap<>();
+        for (int i = 0; i < n; i++) {
+            System.out.print("Router name: ");
+            table.put(sc.nextLine(), new ArrayList<>());
+        }
+        System.out.print("Connections: ");
+        int c = sc.nextInt();
+        for (int i = 0; i < c; i++) {
+            System.out.print("Src Dest Cost: ");
+            String s = sc.next();
+            String d = sc.next();
+            int cost = sc.nextInt();
+            table.get(s).add(new Route(d, Arrays.asList(s, d), cost));
+            table.get(d).add(new Route(s, Arrays.asList(d, s), cost));
+        }
+
+        System.out.println("\n--- Path Vector Table ---");
+        table.forEach((r, routes) -> {
+            System.out.println("\nRouter: " + r);
+            routes.forEach(rt
+                    -> System.out.println("To " + rt.dest + " via " + rt.path + " cost=" + rt.cost)
+            );
+        });
+        sc.close();
+    }
+}
+/*
+Routers: 3
+Router name: A
+Router name: B
+Router name: C
+Connections: 3
+Src Dest Cost: A B 2
+Src Dest Cost: B C 3
+Src Dest Cost: C A 5
+
+--- Path Vector Table ---
+
+Router: A
+To B via [A, B] cost=2
+To C via [A, C] cost=5
+
+Router: B
+To A via [B, A] cost=2
+To C via [B, C] cost=3
+
+Router: C
+To B via [C, B] cost=3
+To A via [C, A] cost=5
+*/
+##
+17TCP
+package TCP17;
+
+import java.io.*; 
+import java.net.*; 
+ 
+public class TCPServer { 
+    public static void main(String[] args) { 
+        try { 
+            ServerSocket serverSocket = new ServerSocket(5000); 
+            System.out.println("Server started. Waiting for client connection..."); 
+            Socket socket = serverSocket.accept(); 
+            System.out.println("Client connected."); 
+            DataInputStream dis = new DataInputStream(socket.getInputStream()); 
+            String fileName = dis.readUTF();  
+            File receivedFile = new File("received_" + fileName); 
+            FileOutputStream fos = new FileOutputStream(receivedFile); 
+            byte[] buffer = new byte[4096]; 
+            int bytesRead; 
+            while ((bytesRead = dis.read(buffer)) > 0) { 
+                fos.write(buffer, 0, bytesRead); 
+            } 
+            System.out.println("File received successfully!"); 
+            System.out.println("Saved as: " + receivedFile.getAbsolutePath()); 
+            fos.close(); 
+            dis.close(); 
+            socket.close(); 
+            serverSocket.close(); 
+        } catch (Exception e) { 
+            System.out.println("Error: " + e.getMessage()); 
+        } 
+    } 
+}
+##
+package TCP17;
+
+import java.io.*; 
+import java.net.*; 
+import java.util.Scanner;
+ 
+public class TCPClient { 
+    public static void main(String[] args) { 
+        try { 
+            Socket socket = new Socket("localhost", 5000); 
+            System.out.println("Connected to server."); 
+            System.out.println("Enter File to Send:");
+            Scanner s=new Scanner(System.in);
+            String f=s.nextLine();
+            File file = new File(f); 
+            if (!file.exists()) { 
+                System.out.println("File not found: " + file.getAbsolutePath()); 
+                socket.close(); 
+                return; 
+            } 
+            DataOutputStream dos = new DataOutputStream(socket.getOutputStream()); 
+            FileInputStream fis = new FileInputStream(file); 
+            dos.writeUTF(file.getName());  
+            byte[] buffer = new byte[4096]; 
+            int bytesRead; 
+            while ((bytesRead = fis.read(buffer)) > 0) { 
+                dos.write(buffer, 0, bytesRead); 
+            } 
+            System.out.println("File sent successfully!"); 
+            fis.close(); 
+            dos.close(); 
+            socket.close(); 
+        } catch (Exception e) { 
+            System.out.println("Error: " + e.getMessage()); 
+        } 
+    } 
+}
+##
+19DistanceVector
+package DistanceVector19;
+
+import java.util.*;
+
+public class App {
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of nodes: ");
+        int n = sc.nextInt();
+        int[][] cost = new int[n][n];
+        System.out.println("Enter cost matrix (use 999 for infinity):");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                cost[i][j] = sc.nextInt();
+            }
+        }
+
+        int[][] distance = new int[n][n];
+        int[][] nextHop = new int[n][n];
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                distance[i][j] = cost[i][j];
+                nextHop[i][j] = j;
+            }
+        }
+
+        // Distance Vector algorithm 
+        boolean updated;
+        do {
+            updated = false;
+            for (int i = 0; i < n; i++) {
+                for (int j = 0; j < n; j++) {
+                    for (int k = 0; k < n; k++) {
+                        if (distance[i][j] > cost[i][k] + distance[k][j]) {
+                            distance[i][j] = cost[i][k] + distance[k][j];
+                            nextHop[i][j] = k;
+                            updated = true;
+                        }
+                    }
+                }
+            }
+        } while (updated);
+
+        System.out.println("\nFinal Distance Vector Table:");
+        for (int i = 0; i < n; i++) {
+            System.out.println("Router " + i + ":");
+            for (int j = 0; j < n; j++) {
+                System.out.println(" -> To " + j + " via " + nextHop[i][j] + " distance " + distance[i][j]);
+            }
+            System.out.println();
+        }
+
+        // Example path from client to server 
+        System.out.print("Enter source node: ");
+        int src = sc.nextInt();
+        System.out.print("Enter destination node: ");
+        int dest = sc.nextInt();
+
+        System.out.print("Path: " + src);
+        while (src != dest) {
+            src = nextHop[src][dest];
+            System.out.print(" -> " + src);
+        }
+        System.out.println();
+        sc.close();
+    }
+}
+/*
+Enter number of nodes: 3
+Enter cost matrix (use 999 for infinity):
+0 2
+999
+2 0 3
+999 3 0
+
+Final Distance Vector Table:
+Router 0:
+ -> To 0 via 0 distance 0
+ -> To 1 via 1 distance 2
+ -> To 2 via 1 distance 5
+
+Router 1:
+ -> To 0 via 0 distance 2
+ -> To 1 via 1 distance 0
+ -> To 2 via 2 distance 3
+
+Router 2:
+ -> To 0 via 1 distance 5
+ -> To 1 via 1 distance 3
+ -> To 2 via 2 distance 0
+
+Enter source node: 0
+Enter destination node: 2
+Path: 0 -> 1 -> 2
+*/
+##
