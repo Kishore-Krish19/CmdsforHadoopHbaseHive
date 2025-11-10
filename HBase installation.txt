@@ -24,7 +24,7 @@ echo 'export HBASE_MANAGES_ZK=true' >> $HBASE_HOME/conf/hbase-env.sh
 echo "Configure hbase-site.xml"
 # nano $HBASE_HOME/conf/hbase-site.xml
 cat <<EOL > $HBASE_HOME/conf/hbase-site.xml
-<configuration>
+
 nano $HBASE_HOME/conf/hbase-site.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
