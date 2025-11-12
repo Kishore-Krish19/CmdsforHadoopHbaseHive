@@ -1,721 +1,922 @@
-##
-UDP1
-package UDPEcho1;
-import java.net.*; 
-public class UDPEchoServer { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket socket = new DatagramSocket(9876); 
-        byte[] buf = new byte[1024]; 
-        System.out.println("Server running..."); 
-        while (true) { 
-            DatagramPacket pkt = new DatagramPacket(buf, buf.length); 
-            socket.receive(pkt); 
-            String msg = new String(pkt.getData(), 0, pkt.getLength()); 
-            System.out.println("From client: " + msg); 
-            socket.send(new DatagramPacket(msg.getBytes(), msg.length(), 
-                    pkt.getAddress(), pkt.getPort())); 
-            if (msg.equalsIgnoreCase("bye")) break; 
-        } 
-        socket.close(); 
-    } 
+//1)
+#include <stdio.h>
+#include <ctype.h>
+int main() {
+    char s[100];
+    printf("Enter input (Ctrl+Z or Ctrl+D to stop):\n");
+    while (scanf("%s", s) != EOF) {
+        if (isalpha(s[0]) || s[0] == '_')
+            printf("%s --> Identifier\n", s);
+        else if (isdigit(s[0]))
+            printf("%s --> Constant\n", s);
+        else
+            printf("%s --> Invalid\n", s);
+    }
+    return 0;
 }
-##
-package UDPEcho1;
+//input: sum = 45
+//--------------------------------------------------------------------------------------------------
+//2
+#include <stdio.h>
+#include <string.h>
 
-import java.net.*;  
-import java.util.*; 
-public class UDPEchoClient { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket socket = new DatagramSocket(); 
-        InetAddress ip = InetAddress.getByName("localhost"); 
-        Scanner sc = new Scanner(System.in); 
-        byte[] buf = new byte[1024]; 
-        System.out.println("Client started. Type messages:"); 
-        while (true) { 
-            String msg = sc.nextLine(); 
-            socket.send(new DatagramPacket(msg.getBytes(), msg.length(), ip, 9876)); 
-            if (msg.equalsIgnoreCase("bye")) break; 
-            DatagramPacket pkt = new DatagramPacket(buf, buf.length); 
-            socket.receive(pkt); 
-            System.out.println("Echo: " + new String(pkt.getData(), 0, pkt.getLength())); 
-        } 
-        socket.close(); 
-    } 
-} 
-##
-2datagram
-package datagramchat2;
+char names[50][20], types[50][10];
+int n = 0;
 
-import java.net.*; 
-import java.util.*; 
-public class Server { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket s = new DatagramSocket(); 
-        InetAddress ip = InetAddress.getByName("localhost"); 
-        Scanner sc = new Scanner(System.in); 
-        System.out.println("Server started, type messages:"); 
-        while (true) { 
-            String msg = sc.nextLine(); 
-            byte[] buf = msg.getBytes(); 
-            s.send(new DatagramPacket(buf, buf.length, ip, 9877)); 
-            if (msg.equalsIgnoreCase("bye")) break; 
-        } 
-        s.close(); 
-    } 
+int search(char *x) {
+    for (int i = 0; i < n; i++)
+        if (!strcmp(x, names[i])) return i;
+    return -1;
 }
-##
-package datagramchat2; 
-import java.net.*; 
-public class Client { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket s = new DatagramSocket(9877); 
-        byte[] buf = new byte[1024]; 
-        System.out.println("Client waiting for messages..."); 
-        while (true) { 
-            DatagramPacket p = new DatagramPacket(buf, buf.length); 
-            s.receive(p); 
-            String msg = new String(p.getData(), 0, p.getLength()); 
-            System.out.println("From Server: " + msg); 
-            if (msg.equalsIgnoreCase("bye")) break; 
-        } 
-        s.close(); 
-    } 
-} 
-##
-3UDP
-package UDPServerClient3;
 
-import java.util.*; 
-import java.net.*;  
-
-public class Server { 
-  public static void main(String[] a)throws Exception{ 
-    DatagramSocket s=new DatagramSocket(9876); 
-    Scanner sc=new Scanner(System.in); 
-    byte[] b=new byte[1024]; 
-    System.out.println("UDP Server:\n Type (bye) to end:");
-    while(true){ 
-      DatagramPacket p=new DatagramPacket(b,b.length); s.receive(p); 
-      String msg=new String(p.getData(),0,p.getLength()); 
-      System.out.println("Client: "+msg); 
-      if(msg.equalsIgnoreCase("bye"))break; 
-      String r=sc.nextLine(); 
-      s.send(new DatagramPacket(r.getBytes(),r.length(),p.getAddress(),p.getPort())); 
-      if(r.equalsIgnoreCase("bye"))break; 
-    } s.close(); 
-  } 
-} 
-##
-package UDPServerClient3;
-
-import java.net.*;  
-import java.util.*; 
-public class Client { 
-  public static void main(String[] a)throws Exception{ 
-    DatagramSocket s=new DatagramSocket(); 
-    System.out.println("UDP Client:");
-    InetAddress ip=InetAddress.getByName("localhost"); 
-    Scanner sc=new Scanner(System.in); 
-    byte[] b=new byte[1024]; 
-    while(true){ 
-      String msg=sc.nextLine(); 
-      s.send(new DatagramPacket(msg.getBytes(),msg.length(),ip,9876)); 
-      if(msg.equalsIgnoreCase("bye"))break; 
-      DatagramPacket p=new DatagramPacket(b,b.length); s.receive(p); 
-      String r=new String(p.getData(),0,p.getLength()); 
-      System.out.println("Server: "+r); 
-      if(r.equalsIgnoreCase("bye"))break; 
-    } s.close(); 
-  } 
+void insert() {
+    printf("Name Type: ");
+    scanf("%s %s", names[n], types[n]);
+    n++;
 }
-##
-4UDP
-package UDPSerCli4;
 
-import java.net.*; 
-public class UDPServer { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket socket = new DatagramSocket(8888); 
-        byte[] buffer = new byte[100]; 
-        System.out.println("Server started. Waiting for client..."); 
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length); 
-        socket.receive(packet); 
-        String msg = new String(packet.getData(), 0, packet.getLength()); 
-        System.out.println("Client: " + msg); 
-        String reply = "Hello Client"; 
-        byte[] sendData = reply.getBytes(); 
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, 
-packet.getAddress(), packet.getPort()); 
-        socket.send(sendPacket); 
-        System.out.println("Reply sent to client."); 
-        socket.close(); 
-    } 
+void display() {
+    for (int i = 0; i < n; i++)
+        printf("%s\t%s\n", names[i], types[i]);
 }
-##
-package UDPSerCli4;
 
-import java.net.*; 
-public class UDPClient { 
-    public static void main(String[] args) throws Exception { 
-        DatagramSocket socket = new DatagramSocket(); 
-        InetAddress ip = InetAddress.getByName("localhost");  
-        String msg = "Hello Server"; 
-        byte[] sendData = msg.getBytes(); 
-        DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, ip, 8888); 
-        socket.send(sendPacket); 
-        byte[] buffer = new byte[100]; 
-        DatagramPacket receivePacket = new DatagramPacket(buffer, buffer.length); 
-        socket.receive(receivePacket); 
-        String reply = new String(receivePacket.getData(), 0, receivePacket.getLength()); 
-        System.out.println("Server: " + reply); 
- 
-        socket.close(); 
-    } 
-}
-##
-5tcp
-package TCP5;
-import java.io.*; 
-import java.net.*; 
-public class TCPServer { 
-  public static void main(String[] a)throws Exception{ 
-      System.out.println("TCP Server Started...");
-      try (ServerSocket ss = new ServerSocket(8088); Socket s = ss.accept()) {
-          BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
-          PrintWriter out=new PrintWriter(s.getOutputStream(),true);
-          String fname=in.readLine();
-          File f=new File(fname);
-          if(f.exists()){
-              try (BufferedReader fr = new BufferedReader(new FileReader(f))) {
-                  String line;
-                  while((line=fr.readLine())!=null) out.println(line);
-              }
-          }else out.println("File not found");
-      }
-  } 
-} 
-##
-package TCP5;
-import java.io.*; 
-import java.net.*; 
-public class TCPClient { 
-public static void main(String[] a)throws Exception{ 
-    try (Socket s = new Socket("localhost",8088)) {
-        BufferedReader kb=new BufferedReader(new InputStreamReader(System.in));
-        PrintWriter out=new PrintWriter(s.getOutputStream(),true);
-        BufferedReader in=new BufferedReader(new InputStreamReader(s.getInputStream()));
-        System.out.print("Enter file name: ");
-        out.println(kb.readLine());
-        String line;
-        while((line=in.readLine())!=null) System.out.println(line);
-    } 
-} 
-} 
-##
-7Sliding
-package Sliding7;
-
-import java.util.*; 
-class SlidingWindow { 
-    public static void main(String[] args) { 
-        Scanner s = new Scanner(System.in); 
-        int w = 5, total; 
-        System.out.print("Enter total frames: "); //10
-        total = s.nextInt(); 
-        for (int i = 1; i <= total; i += w) { 
-            System.out.print("\nSending frames: "); 
-            for (int j = i; j < i + w && j <= total; j++) 
-                System.out.print(j + " "); 
-            System.out.print("\nAll acknowledged."); 
-        } 
-        System.out.println("\n\nAll frames sent!"); 
-    } 
-} 
-##
-8Broadcaster
-package Broadcaster8;
-
-import java.net.*; 
-public class Receiver { 
-public static void main(String[] args) throws Exception { 
-DatagramSocket socket = new DatagramSocket(9876); 
-byte[] buffer = new byte[1024]; 
-DatagramPacket packet = new DatagramPacket(buffer, buffer.length); 
-System.out.println("Waiting for broadcast..."); 
-socket.receive(packet); 
-System.out.println("Received: " + new String(packet.getData()).trim()); 
-socket.close(); 
-} 
-}
-##
-package Broadcaster8;
-import java.util.*;
-import java.net.*; 
-public class Broadcaster { 
-    public static void main(String[] args) throws Exception { 
-        try (DatagramSocket socket = new DatagramSocket()) {
-            socket.setBroadcast(true);
-            System.out.println("Enter the message to Broadcast:");
-            Scanner s=new Scanner(System.in);
-            String msg = s.nextLine();
-            DatagramPacket packet = new DatagramPacket(
-                    msg.getBytes(), msg.length(),
-                    InetAddress.getByName("255.255.255.255"), 9876);
-            socket.send(packet);
-            System.out.println("Broadcast message sent.");
-        } 
-    } 
-} 
-##
-9IProuting
-package IProuting9;
-
-import java.util.*; 
-class IPRouting { 
-    public static void main(String[] a) { 
-        Scanner s = new Scanner(System.in); 
-        String[][] table = { 
-            {"192.168.1", "Router A"}, 
-            {"192.168.2", "Router B"}, 
-            {"10.0.0",    "Router C"} 
-        }; 
-        System.out.print("Enter destination IP: "); 
-        String ip = s.next(); 
-        for (String[] t : table) 
-            if (ip.startsWith(t[0])) { 
-                System.out.println("Routed via " + t[1]); 
-                return; 
-} 
-System.out.println("No route found."); 
-} 
-} 
-##
-12Framing
-package FramingSimple12;
-
-import java.util.*; 
-public class FramingSimple { 
-public static void main(String args[]) { 
-Scanner sc = new Scanner(System.in); 
-System.out.print("Enter Data: "); 
-String data = sc.nextLine(); 
-// Character Count 
-String cc = (data.length() + 1) + data; 
-        // Character Stuffing (Flag = F, ESC = E) 
-        String cs = data.replace("E","EE").replace("F","EF"); 
-        cs = "F" + cs + "F"; 
-        // Bit Stuffing 
-        String bs = ""; 
-        int count = 0; 
-        for(char c : data.toCharArray()) { 
-            bs += c; 
-            if(c=='1') count++; 
-            else count = 0; 
-            if(count==5){ 
-                bs += "0"; 
-                count = 0; 
-            } 
-        } 
-        System.out.println("\nCharacter Count: " + cc); 
-        System.out.println("Character Stuffing: " + cs); 
-        System.out.println("Bit Stuffing: " + bs); 
-    } 
-}
-input : Hello
-##
-13Pingshort
-package PingShort13;
-
-public class PingShort { 
-    public static void main(String[] args) { 
-        int nodes = 6; 
-        int bufferLimit = 3; 
-        int packets = 10; 
-        int dropped = 0; 
- 
-        for(int p=1; p<=packets; p++) { 
-            int load = (int)(Math.random()*5); // random traffic load 
-            if(load > bufferLimit) 
-                dropped++; 
-        } 
- 
-        System.out.println("Total Packets Sent : " + packets); 
-        System.out.println("Packets Dropped    : " + dropped); 
-    } 
-} 
-##
-14datagram
-package datagramsocket14;
-
-import java.net.*; 
-import java.io.*; 
-public class Server { 
-public static void main(String[] args) throws Exception { 
-    try (DatagramSocket server = new DatagramSocket(5000)) {
-        BufferedReader br = new BufferedReader(new
-        java.io.InputStreamReader(System.in));
-        InetAddress clientIP = InetAddress.getLocalHost();
-        System.out.println("Server ready. Type messages to send:");
-        while (true) {
-            String msg = br.readLine();
-            byte[] data = msg.getBytes();
-            DatagramPacket packet = new DatagramPacket(data, data.length, clientIP, 6000);
-            server.send(packet);
-            if (msg.equalsIgnoreCase("bye")) break;
+void del() {
+    char x[20];
+    printf("Delete name: ");
+    scanf("%s", x);
+    int i = search(x);
+    if (i >= 0) {
+        for (; i < n - 1; i++) {
+            strcpy(names[i], names[i + 1]);
+            strcpy(types[i], types[i + 1]);
         }
-    } 
-    } 
+        n--;
+    } else printf("Not found\n");
 }
-##
-package datagramsocket14;
 
-import java.net.*; 
- 
-public class Client { 
-    public static void main(String[] args) throws Exception { 
-        try (DatagramSocket client = new DatagramSocket(6000)) {
-            byte[] buf = new byte[1024];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            
-            System.out.println("Client waiting for messages...");
-            while (true) {
-                client.receive(packet);
-                String msg = new String(packet.getData(), 0, packet.getLength());
-                System.out.println("Server: " + msg);
-                if (msg.equalsIgnoreCase("bye")) break;
-            }
-        } 
-    } 
+void modify() {
+    char x[20];
+    printf("Modify name: ");
+    scanf("%s", x);
+    int i = search(x);
+    if (i >= 0) {
+        printf("New type: ");
+        scanf("%s", types[i]);
+    } else printf("Not found\n");
 }
-##
-15Subnet
-package Subnet15;
 
-import java.util.*;
-
-public class SubnetGraph {
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Enter number of subnet nodes: ");
-        int n = sc.nextInt(), delay[][] = new int[n][n];
-        System.out.print("Enter number of links: ");
-        int e = sc.nextInt();
-
-        System.out.println("Enter links (src dest delay):");
-        for (int i = 0; i < e; i++) {
-            int a = sc.nextInt(), b = sc.nextInt(), d = sc.nextInt();
-            delay[a][b] = delay[b][a] = d;
+int main() {
+    int ch; char x[20];
+    while (1) {
+         printf("\n1.Insert\n2.Display\n3.Search\n4.Delete\n5.Modify\n6.Exit\nEnter the option: ");
+        scanf("%d", &ch);
+        if (ch == 1) insert();
+        else if (ch == 2) display();
+        else if (ch == 3) {
+            printf("Search name: ");
+            scanf("%s", x);
+            int i = search(x);
+            if (i >= 0) printf("Found: %s %s\n", names[i], types[i]);
+            else printf("Not found\n");
         }
+        else if (ch == 4) del();
+        else if (ch == 5) modify();
+        else break;
+    }
+}
+//------------------------------------------------------------------------------------------------
+//3
+%{
+#include <stdio.h>
+%}
 
-        System.out.println("Delay (in ms) between nodes:");
-        for (int[] row : delay) {
-            for (int val : row) {
-                System.out.print(val + "\t");
-            }
-            System.out.println();
+%%
+
+[a-zA-Z_][a-zA-Z0-9_]*      { printf("IDENTIFIER : %s\n", yytext); }
+[0-9]+(\.[0-9]+)?           { printf("CONSTANT   : %s\n", yytext); }
+[ \t\n]+
+.                           { printf("SYMBOL     :%s\n", yytext); }
+
+%%
+
+int main() {
+   printf("Enter the Expression :");
+    yylex();
+    return 0;
+}
+
+flex lexical.l
+gcc lex.yy.c -lfl -o lexical
+./lexical
+
+
+input: a + b + c = 10
+//--------------------------------------------------------------------------------------------------
+//4
+//exp4.l
+%{
+#include "y.tab.h" 
+%}
+
+%%
+
+[0-9]+        { return NUMBER; }
+[ \t]+        { }
+\n            { return '\n'; }
+.             { return yytext[0]; }
+
+%%
+
+int yywrap() {
+    return 1;
+}
+
+//exp4.y
+%{
+#include <stdio.h>
+int yylex(void);
+void yyerror(const char *s);
+%}
+
+%token NUMBER
+
+%left '+' '-'
+%left '*' '/'
+
+%%
+
+program: 
+       | program line
+       ;
+
+line:    expr '\n'  { printf("= Valid Expression\n"); }
+     |   '\n'       
+     ;
+
+expr:    NUMBER
+     |   expr '+' expr
+     |   expr '-' expr
+     |   expr '*' expr
+     |   expr '/' expr
+     |   '(' expr ')'
+     ;
+
+%%
+
+int main() {
+    printf("Enter an arithmetic expression:\n");
+    yyparse();
+    return 0;
+}
+
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: Invalid syntax\n");
+}
+
+// run
+yacc -d exp4.y
+flex  exp4.l
+gcc y.tab.c lex.yy.c -o exp4
+
+//output:(5 + 3) * 2
+//---------------------------------------------------------------------------------------------------
+//5
+
+//exp5.l
+%{
+#include "y.tab.h"
+%}
+%%
+[a-zA-Z][a-zA-Z0-9]*   { return ID; }
+.|\n                   { return INVALID; }
+%%
+
+int yywrap(){ return 1; }
+
+//exp5.y
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%token ID INVALID
+
+%%
+S: ID       { printf("Valid Variable\n"); }
+ | INVALID  { printf("Invalid Variable\n"); }
+ ;
+%%
+int main(){
+  printf("Enter variable: ");
+  yyparse();
+  return 0;
+}
+int yyerror(char *s){}
+
+//compile and run
+	yacc -d exp5.y
+	lex exp5.l
+	gcc y.tab.c lex.yy.c -lfl -o exp5
+	./exp5
+//output:
+Enter variable: abc123
+//---------------------------------------------------------------------------------------
+//6
+//exp6.l
+%{
+#include "y.tab.h"
+extern int yylval;
+%}
+%%
+[0-9]+      { yylval = atoi(yytext); return NUM; }
+[+\-*/()=]  { return yytext[0]; }
+[ \t\n]+    ;
+.           ;
+%%
+int yywrap(){ return 1; }
+
+//exp6.y
+%{
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%token NUM
+%left '+' '-'
+%left '*' '/'
+
+%%
+S: E '=' { printf("Result=%d\n",$1); }
+ ;
+E: E '+' E { $$=$1+$3; }
+ | E '-' E { $$=$1-$3; }
+ | E '*' E { $$=$1*$3; }
+ | E '/' E { $$=$1/$3; }
+ | '(' E ')' { $$=$2; }
+ | NUM
+ ;
+%%
+int main(){ printf("Enter expression: "); yyparse(); }
+int yyerror(char *s){}
+
+//run
+yacc -d exp6.y
+lex exp6.l
+gcc y.tab.c lex.yy.c -lfl -o calc
+./calc
+
+//output:Enter expression: 10+5*2=
+//---------------------------------------------------------------------------------------------------------------
+//7
+//exp7.l
+%{
+#include "y.tab.h"
+#include <stdio.h>
+#include <stdlib.h>
+%}
+
+%%
+
+[0-9]+      { yylval = atoi(yytext); return NUM; }
+[+\-*/=()]  { return yytext[0]; }
+[ \t\n]     ;
+.           { return yytext[0]; }
+
+%%
+
+int yywrap() { return 1; }
+//exp7.y
+%{
+#include <stdio.h>
+#include <stdlib.h>
+
+int tempCount = 1;
+int yylex(void);
+int yyerror(const char *s);
+%}
+
+%token NUM
+%left '+' '-'
+%left '*' '/'
+
+%%
+
+E : E '+' E { printf("t%d = t%d + t%d\n", tempCount, tempCount-2, tempCount-1); tempCount++; }
+  | E '-' E { printf("t%d = t%d - t%d\n", tempCount, tempCount-2, tempCount-1); tempCount++; }
+  | E '*' E { printf("t%d = t%d * t%d\n", tempCount, tempCount-2, tempCount-1); tempCount++; }
+  | E '/' E { printf("t%d = t%d / t%d\n", tempCount, tempCount-2, tempCount-1); tempCount++; }
+  | '(' E ')'
+  | NUM     { printf("t%d = %d\n", tempCount++, $1); }
+  ;
+
+%%
+
+int main() {
+    printf("Enter expression: ");
+    yyparse();
+    return 0;
+}
+
+int yyerror(const char *s) {
+    printf("Invalid expression\n");
+    return 0;
+}
+
+
+//run
+lex exp7.l
+yacc -d exp7.y
+gcc lex.yy.c y.tab.c -o exp7
+./exp7
+
+//output:Enter expression: 3+5*2
+//----------------------------------------------------------------------------------
+//8
+//exp8.c
+
+#include <stdio.h>
+#include <string.h>
+
+char vars[20][10];
+int n = 0;
+
+int declared(char *x) {
+    for (int i = 0; i < n; i++)
+        if (!strcmp(vars[i], x)) return 1;
+    return 0;
+}
+
+int main() {
+    char t[10], v[10], op[5], val[10];
+    printf("Enter statements (END to stop):\n");
+    while (1) {
+        scanf("%s", t);
+        if (!strcmp(t, "END")) break;
+        if (!strcmp(t, "int") || !strcmp(t, "float")) {
+            scanf("%s", v);
+            if (declared(v)) printf("Error: %s redeclared\n", v);
+            else { strcpy(vars[n++], v); printf("Declared %s %s\n", t, v); }
+        } else {
+            strcpy(v, t);
+            scanf("%s %s", op, val);
+            if (!declared(v)) printf("Error: %s not declared\n", v);
+            else printf("Valid statement: %s %s %s\n", v, op, val);
         }
+    }
+}
 
-        System.out.print("\nEnter source node to find minimum delay: ");
-        int src = sc.nextInt();
-        int[] dist = new int[n];
-        boolean[] vis = new boolean[n];
-        Arrays.fill(dist, 9999);
-        dist[src] = 0;
+//input
+int a
+float b
+a = 5
+b = a
+c = 2
+int a
+END
+//-----------------------------------------------------------------------------------------
+----------
+//9
+//exp9.c
+#include <stdio.h>
+#include <string.h>
 
-        for (int c = 0; c < n - 1; c++) {
-            int u = -1, min = 9999;
-            for (int i = 0; i < n; i++) {
-                if (!vis[i] && dist[i] < min) {
-                    min = dist[i];
-                    u = i;
-                }
-            }
-            vis[u] = true;
-            for (int v = 0; v < n; v++) {
-                if (!vis[v] && delay[u][v] > 0 && dist[u] + delay[u][v] < dist[v]) {
-                    dist[v] = dist[u] + delay[u][v];
+int main() {
+    char code[10][50], lhs[10][10], expr[10][50];
+    int n, i, j;
+
+    printf("Number of statements: "); scanf("%d",&n); getchar();
+    for(i=0;i<n;i++) {
+        fgets(code[i],50,stdin);
+        code[i][strcspn(code[i],"\n")] = 0;
+        sscanf(code[i], "%s = %[^\n]", lhs[i], expr[i]);
+    }
+
+    printf("\nBefore Optimization:\n");
+    for(i=0;i<n;i++) printf("%s\n", code[i]);
+     for(i=0;i<n;i++){
+        if(lhs[i][0]=='\0') continue;
+        for(j=i+1;j<n;j++){
+            if(strcmp(expr[i], expr[j])==0){
+                strcpy(expr[j], lhs[i]); // replace rhs with lhs of previous
+                lhs[j][0] = '\0'; 
+            } else {
+                // replace occurrences of removed lhs in future expressions
+                if(lhs[j][0]!='\0'){
+                    char *p = strstr(expr[j], lhs[i]);
+                    if(p) strncpy(p, lhs[i], strlen(lhs[i]));
                 }
             }
         }
-        System.out.println("\nMinimum delay from node " + src + ":");
-        for (int i = 0; i < n; i++) {
-            System.out.println("To node " + i + " = " + dist[i] + " ms");
-        }
-        sc.close();
     }
+
+    printf("\nAfter Optimization:\n");
+    for(i=0;i<n;i++){
+        if(lhs[i][0]!='\0') printf("%s = %s\n", lhs[i], expr[i]);
+    }
+
+    return 0;
+}
+
+//input:
+5
+t1 = a + b
+t2 = a + b
+t3 = t1 + c
+t4 = t2 + c
+t5 = t4 + d
+//---------------------------------------------------------------------------------------
+//10
+exp10.c
+#include <stdio.h>
+#include <string.h>
+
+int main() {
+    char code[20][50];
+    int n;
+    printf("Number of statements: "); scanf("%d",&n); getchar();
+
+    printf("Enter statements:\n");
+    for(int i=0;i<n;i++) fgets(code[i],50,stdin);
+
+    printf("\nGenerated Machine Code:\n");
+    for(int i=0;i<n;i++){
+        char lhs[10], op, arg1[10], arg2[10];
+        if(sscanf(code[i], "%s = %s %c %s", lhs,arg1,&op,arg2)==4){
+            printf("LOAD %s\n", arg1);
+            switch(op){
+                case '+': printf("ADD %s\n", arg2); break;
+                case '-': printf("SUB %s\n", arg2); break;
+                case '*': printf("MUL %s\n", arg2); break;
+                case '/': printf("DIV %s\n", arg2); break;
+            }
+            printf("STORE %s\n", lhs);
+        }
+        else if(sscanf(code[i], "%s = %s", lhs,arg1)==2){
+            printf("LOAD %s\nSTORE %s\n", arg1,lhs);
+        }
+    }
+}
+
+//input:
+5
+t1 = a + b
+t2 = t1 * c
+t3 = t2 - d
+t4 = t3 / e
+t5 = t4
+
+//-----------------------------------------------------------------------------------------
+//11
+//exp11.l
+%{
+#include "y.tab.h"
+%}
+
+%%
+[A-Z][a-zA-Z0-9]{5}   { return VALID_ID; }
+\n                    { return '\n'; }
+[ \t]+                 { /* Skip whitespace */ }
+
+.                     { return yytext[0]; }
+%%
+
+int yywrap() {
+    return 1;
+}
+//exp11.y
+  GNU nano 7.2                    exp11.y
+%{
+#include <stdio.h>
+extern int yylex(void);
+void yyerror(const char *s) {
+    fprintf(stderr, "Error: Invalid syntax\n");
+}
+%}
+
+%token VALID_ID
+
+%%
+program:
+       | program line
+       ;
+
+line:    VALID_ID '\n'  { printf("OK: Found a valid statement\n"); }
+     |   '\n'
+     ;
+%%
+
+int main(void) {
+    printf("Enter statements (e.g., A12345 or Kp2x9):\n");
+    yyparse();
+    return 0;
+}
+
+//run
+yacc -d exp11.y
+flex exp11.l
+gcc y.tab.c lex.yy.c -o exp11
+./exp11
+
+//output:A12345 , hello ....
+//--------------------------------------------------------------------------------------------------------------------------
+//12
+//exp12.l
+%{
+#include <stdio.h>
+extern FILE *yyin;
+%}
+
+%%
+
+[ \t\n]+          ;
+
+"//".* ;
+"/*"([^*]|(\*+[^*/]))*\*+"/"  ;
+
+"if"|"else"|"for"|"while"|"return"  { printf("Keyword: %s\n", yytext); }
+
+"=="|"="|"+"|"-"|"*"|"/"            { printf("Operator: %s\n", yytext); }
+
+[a-zA-Z_][a-zA-Z0-9_]* { printf("Identifier: %s\n", yytext); }
+
+[0-9]+                              { printf("Number: %s\n", yytext); }
+
+.                                   { printf("Other: %s\n", yytext); }
+
+%%
+
+int main(int argc, char *argv[]) {
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+        return 1;
+    }
+    
+    FILE *file = fopen(argv[1], "r");
+    if (!file) {
+        perror(argv[1]);
+        return 1;
+    }
+    
+    yyin = file;
+    yylex();
+    
+    fclose(file);
+    return 0;
+}
+
+int yywrap() { 
+    return 1; 
+}
+
+//input file: nano exp12input.txt
+//exp12input.txt
+
+//  program
+int x = 10;
+if (x == 10) {
+    return 0;
+}
+/* end */
+
+//run
+flex exp12.l
+gcc lex.yy.c -o exp12
+
+//output
+./exp12 exp12input.txt
+
+//-------------------------------------------------------------------------------------------------------------------------------
+//13
+//exp13.l
+%{
+#include <stdio.h>
+extern FILE *yyin;
+%}
+
+%%
+
+[ \t\n]+       ;
+"//".*          ;
+"/*"([^*]|\*+[^*/])*"*"+"/" ;
+
+"if"|"else"|"for"|"while"|"switch"|"case"|"default"  { printf("%s\n", yytext); }
+
+.               ;
+
+%%
+
+int main(int argc,char **argv){
+printf("control statements in the program are :\n");
+    if(argc < 2){
+        printf("Usage: %s <inputfile>\n", argv[0]);
+        return 0;
+    }
+
+    yyin = fopen(argv[1], "r");
+    if(!yyin){
+        printf("Cannot open %s\n", argv[1]);
+        return 0;
+    }
+
+    yylex();                    
+    fclose(yyin);
+}
+
+int yywrap(){ return 1; }
+
+
+//input:exp13input.c
+if(a==b)
+for(i=0;i<10;i++)
+else
+switch(x)
+case 1:
+default
+
+//run
+flex exp13.l
+gcc lex.yy.c -o exp13
+./exp13 exp13input.c
+
+//---------------------------------------------------------------------------------------
+
+//14
+%{
+#include <stdio.h>
+int vowels = 0, consonants = 0;
+%}
+
+%%
+
+[aeiouAEIOU] { vowels++; }
+
+[a-zA-Z]     { consonants++; }
+
+.            ;
+
+%%
+
+int main(){
+    printf("Enter text:\n");
+    yylex();
+    printf("Vowels: %d\nConsonants: %d\n", vowels, consonants);
+    return 0;
+}
+
+int yywrap(){ 
+    return 1; 
+}
+
+//run 
+flex exp14.l
+gcc lex.yy.c -o exp14
+./exp14
+
+//input : Hello World then press enter and then ctrl+D
+
+//-----------------------------------------------------------------------------------------
+//15
+//exp15.c
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+char stack[100][10];
+int top=-1;
+
+void push(char *s){ strcpy(stack[++top], s); }
+char* pop(){ return stack[top--]; }
+
+int main(){
+    char exp[100], t[3]; 
+    int temp=1;
+    printf("Enter postfix: ");
+    scanf("%s", exp);
+
+    for(int i=0; i<strlen(exp); i++){
+        if(isalpha(exp[i])){ t[0]=exp[i]; t[1]='\0'; push(t); }
+        else{
+            char *b=pop(), *a=pop();
+            printf("t%d = %s %c %s\n", temp, a, exp[i], b);
+            sprintf(t, "t%d", temp++);
+            push(t);
+        }
+    }
+}
+
+//run: 
+gcc exp15.c -o exp15
+ ./exp15
+//input:Enter postfix:  ab+c*
+//-----------------------------------------------------------------------------------------
+
+//16
+//exp16.c
+%{
+#include <stdio.h>
+%}
+
+%%
+
+[ \t\n]+       ;
+
+"if"|"else"|"for"|"while"|"switch"|"case"|"default"  { printf("Keyword: %s\n", yytext); }
+"=="|"="|"+"|"-"|"*"|"/"                             { printf("Operator: %s\n", yytext); }
+[a-zA-Z_][a-zA-Z0-9_]*                               { printf("Identifier: %s\n", yytext); }
+
+. ;
+
+%%
+
+int main(){
+    printf("Enter C code:\n");
+    yylex();
+}
+int yywrap(){ return 1; }
+
+//run
+flex exp16.l
+gcc lex.yy.c -o exp16
+./exp16
+
+//input:if(a==b) a=a+1;
+
+//------------------------------------------------------------------------------------
+//17
+//exp17.c
+#include <stdio.h>
+#include <string.h>
+int main()
+{
+    char result[10], arg1[10], op[5], arg2[10];
+    printf("Enter Three Address Code :\n");
+    printf("Input: ");
+    scanf("%s = %s %s %s", result, arg1, op, arg2);
+    printf("\nEquivalent Assembly Code:\n");
+    printf("MOV R1, %s\n", arg1);
+    if (strcmp(op, "+") == 0)
+        printf("ADD R1, %s\n", arg2);
+    else if (strcmp(op, "-") == 0)
+        printf("SUB R1, %s\n", arg2);
+    else if (strcmp(op, "*") == 0)
+        printf("MUL R1, %s\n", arg2);
+    else if (strcmp(op, "/") == 0)
+        printf("DIV R1, %s\n", arg2);
+    else
+        printf("; Unsupported operator\n");
+    printf("MOV %s, R1\n", result);
+
+    return 0;
 }
 
 /*
-Enter number of subnet nodes: 5
-Enter number of links: 5
-Enter links (src dest delay):
-1 2 3
-2 3 4
-1 4 5
-3 4 1
-4 3 2
-Delay (in ms) between nodes:
-0	0	0	0	0	
-0	0	3	0	5	
-0	3	0	4	0	
-0	0	4	0	2	
-0	5	0	2	0	
-
-Enter source node to find minimum delay: 2
-
-Minimum delay from node 2:
-To node 0 = 9999 ms
-To node 1 = 3 ms
-To node 2 = 0 ms
-To node 3 = 4 ms
-To node 4 = 6 ms
+Input: t = a + b
 */
-##
-16PVR
-package PathVectorRouting16;
 
-import java.util.*;
 
-public class PathVectorRouting {
+//------------------------------------------------------------------------------------
+//18
+//exp18.c
+#include <stdio.h>
+#include <string.h>
 
-    static class Route {
+int main() {
+    char input[100];
+    char non_terminal;
+    char check_terminal;
+    char alpha[20];
+    char beta[20];
 
-        String dest;
-        List<String> path;
-        int cost;
+    printf("Enter a production (e.g., E->E+T|T): ");
+    scanf("%s", input);
 
-        Route(String d, List<String> p, int c) {
-            dest = d;
-            path = new ArrayList<>(p);
-            cost = c;
-        }
+    int result = sscanf(input, "%c->%c%[^|]|%s", &non_terminal, &check_terminal, alpha, beta);
+
+    if (result == 4 && non_terminal == check_terminal) {
+        printf("\nLeft recursion detected.\n");
+        printf("Grammar after elimination:\n\n");
+        
+        printf("%c -> %s%c'\n", non_terminal, beta, non_terminal);
+        
+        printf("%c' -> %s%c' | epsilon\n", non_terminal, alpha, non_terminal);
+        
+    } else {
+        printf("\nInput is not in the format 'A->A(alpha)|(beta)' or has no left recursion.\n");
     }
 
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Routers: ");
-        int n = sc.nextInt();
-        sc.nextLine(); // consume newline 
-        Map<String, List<Route>> table = new HashMap<>();
-        for (int i = 0; i < n; i++) {
-            System.out.print("Router name: ");
-            table.put(sc.nextLine(), new ArrayList<>());
-        }
-        System.out.print("Connections: ");
-        int c = sc.nextInt();
-        for (int i = 0; i < c; i++) {
-            System.out.print("Src Dest Cost: ");
-            String s = sc.next();
-            String d = sc.next();
-            int cost = sc.nextInt();
-            table.get(s).add(new Route(d, Arrays.asList(s, d), cost));
-            table.get(d).add(new Route(s, Arrays.asList(d, s), cost));
-        }
+    return 0;
+}
+//input:E->E+T|T
+//------------------------------------------------------------------------------------
 
-        System.out.println("\n--- Path Vector Table ---");
-        table.forEach((r, routes) -> {
-            System.out.println("\nRouter: " + r);
-            routes.forEach(rt
-                    -> System.out.println("To " + rt.dest + " via " + rt.path + " cost=" + rt.cost)
-            );
-        });
-        sc.close();
+//19
+//exp19.c
+#include <stdio.h>
+#include <ctype.h>
+
+char val[100];
+int left[100], right[100], idx=0;
+
+int createAST(char *exp, int *i){
+    int id = idx++;
+    val[id] = exp[(*i)++];
+    left[id] = right[id] = -1;
+    if(val[id]=='+'||val[id]=='-'||val[id]=='*'||val[id]=='/'){
+        left[id] = createAST(exp,i);
+        right[id] = createAST(exp,i);
+    }
+    return id;
+}
+
+void printTree(int id, int level){
+    if(id==-1) return;
+    for(int i=0;i<level;i++) printf("    ");
+    printf("%c\n", val[id]);
+    printTree(left[id], level+1);
+    printTree(right[id], level+1);
+}
+
+int main(){
+    char exp[100], clean[100];
+    printf("Enter prefix expression: ");
+    fgets(exp, sizeof(exp), stdin);
+
+    // remove spaces
+    int k=0;
+    for(int i=0; exp[i]; i++)
+        if(exp[i]!=' ' && exp[i]!='\n') clean[k++] = exp[i];
+    clean[k] = '\0';
+
+    int i=0;
+    int root = createAST(clean,&i);
+    printf("AST Tree:\n");
+    printTree(root,0);
+}
+
+//input:+ a * b c
+//---------------------------------------------------------------------------------------
+//20
+#include <stdio.h>
+#include <stdlib.h>
+
+char *input;
+
+void E();
+void E_prime();
+void T();
+
+void error() {
+    printf("Error: String not accepted\n");
+    exit(1);
+}
+
+void match(char token) {
+    if (*input == token) {
+        input++;
+    } else {
+        error();
     }
 }
-/*
-Routers: 3
-Router name: A
-Router name: B
-Router name: C
-Connections: 3
-Src Dest Cost: A B 2
-Src Dest Cost: B C 3
-Src Dest Cost: C A 5
 
---- Path Vector Table ---
-
-Router: A
-To B via [A, B] cost=2
-To C via [A, C] cost=5
-
-Router: B
-To A via [B, A] cost=2
-To C via [B, C] cost=3
-
-Router: C
-To B via [C, B] cost=3
-To A via [C, A] cost=5
-*/
-##
-17TCP
-package TCP17;
-
-import java.io.*; 
-import java.net.*; 
- 
-public class TCPServer { 
-    public static void main(String[] args) { 
-        try { 
-            ServerSocket serverSocket = new ServerSocket(5000); 
-            System.out.println("Server started. Waiting for client connection..."); 
-            Socket socket = serverSocket.accept(); 
-            System.out.println("Client connected."); 
-            DataInputStream dis = new DataInputStream(socket.getInputStream()); 
-            String fileName = dis.readUTF();  
-            File receivedFile = new File("received_" + fileName); 
-            FileOutputStream fos = new FileOutputStream(receivedFile); 
-            byte[] buffer = new byte[4096]; 
-            int bytesRead; 
-            while ((bytesRead = dis.read(buffer)) > 0) { 
-                fos.write(buffer, 0, bytesRead); 
-            } 
-            System.out.println("File received successfully!"); 
-            System.out.println("Saved as: " + receivedFile.getAbsolutePath()); 
-            fos.close(); 
-            dis.close(); 
-            socket.close(); 
-            serverSocket.close(); 
-        } catch (Exception e) { 
-            System.out.println("Error: " + e.getMessage()); 
-        } 
-    } 
-}
-##
-package TCP17;
-
-import java.io.*; 
-import java.net.*; 
-import java.util.Scanner;
- 
-public class TCPClient { 
-    public static void main(String[] args) { 
-        try { 
-            Socket socket = new Socket("localhost", 5000); 
-            System.out.println("Connected to server."); 
-            System.out.println("Enter File to Send:");
-            Scanner s=new Scanner(System.in);
-            String f=s.nextLine();
-            File file = new File(f); 
-            if (!file.exists()) { 
-                System.out.println("File not found: " + file.getAbsolutePath()); 
-                socket.close(); 
-                return; 
-            } 
-            DataOutputStream dos = new DataOutputStream(socket.getOutputStream()); 
-            FileInputStream fis = new FileInputStream(file); 
-            dos.writeUTF(file.getName());  
-            byte[] buffer = new byte[4096]; 
-            int bytesRead; 
-            while ((bytesRead = fis.read(buffer)) > 0) { 
-                dos.write(buffer, 0, bytesRead); 
-            } 
-            System.out.println("File sent successfully!"); 
-            fis.close(); 
-            dos.close(); 
-            socket.close(); 
-        } catch (Exception e) { 
-            System.out.println("Error: " + e.getMessage()); 
-        } 
-    } 
-}
-##
-19DistanceVector
-package DistanceVector19;
-
-import java.util.*;
-
-public class App {
-
-    public static void main(String[] args) {
-        Scanner sc = new Scanner(System.in);
-        System.out.print("Enter number of nodes: ");
-        int n = sc.nextInt();
-        int[][] cost = new int[n][n];
-        System.out.println("Enter cost matrix (use 999 for infinity):");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                cost[i][j] = sc.nextInt();
-            }
-        }
-
-        int[][] distance = new int[n][n];
-        int[][] nextHop = new int[n][n];
-
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                distance[i][j] = cost[i][j];
-                nextHop[i][j] = j;
-            }
-        }
-
-        // Distance Vector algorithm 
-        boolean updated;
-        do {
-            updated = false;
-            for (int i = 0; i < n; i++) {
-                for (int j = 0; j < n; j++) {
-                    for (int k = 0; k < n; k++) {
-                        if (distance[i][j] > cost[i][k] + distance[k][j]) {
-                            distance[i][j] = cost[i][k] + distance[k][j];
-                            nextHop[i][j] = k;
-                            updated = true;
-                        }
-                    }
-                }
-            }
-        } while (updated);
-
-        System.out.println("\nFinal Distance Vector Table:");
-        for (int i = 0; i < n; i++) {
-            System.out.println("Router " + i + ":");
-            for (int j = 0; j < n; j++) {
-                System.out.println(" -> To " + j + " via " + nextHop[i][j] + " distance " + distance[i][j]);
-            }
-            System.out.println();
-        }
-
-        // Example path from client to server 
-        System.out.print("Enter source node: ");
-        int src = sc.nextInt();
-        System.out.print("Enter destination node: ");
-        int dest = sc.nextInt();
-
-        System.out.print("Path: " + src);
-        while (src != dest) {
-            src = nextHop[src][dest];
-            System.out.print(" -> " + src);
-        }
-        System.out.println();
-        sc.close();
+void T() {
+    if (*input == 'i') {
+        match('i');
+    } else {
+        error();
     }
 }
-/*
-Enter number of nodes: 3
-Enter cost matrix (use 999 for infinity):
-0 2
-999
-2 0 3
-999 3 0
 
-Final Distance Vector Table:
-Router 0:
- -> To 0 via 0 distance 0
- -> To 1 via 1 distance 2
- -> To 2 via 1 distance 5
+void E_prime() {
+    if (*input == '+') {
+        match('+');
+        T();
+        E_prime();
+    }
+}
 
-Router 1:
- -> To 0 via 0 distance 2
- -> To 1 via 1 distance 0
- -> To 2 via 2 distance 3
+void E() {
+    T();
+    E_prime();
+}
 
-Router 2:
- -> To 0 via 1 distance 5
- -> To 1 via 1 distance 3
- -> To 2 via 2 distance 0
+int main() {
+    char buffer[100];
+    printf("Enter string (e.g., i+i+i): ");
+    scanf("%s", buffer);
+    input = buffer;
 
-Enter source node: 0
-Enter destination node: 2
-Path: 0 -> 1 -> 2
-*/
-##
+    E();
+
+    if (*input == '\0') {
+        printf("Success: String accepted\n");
+    } else {
+        error();
+    }
+    
+    return 0;
+}
+//input: i+i
+//---------------------------------------------------------------------------------
+
+
+
