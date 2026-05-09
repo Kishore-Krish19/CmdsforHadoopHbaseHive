@@ -1,1 +1,80 @@
-https://colab.research.google.com/drive/1fHtoxl0c8UE28rQMro-xZxyYs_Gd1tFz?usp=sharing
+##1
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("sales.csv")
+
+df['Price'] = df.groupby('Product')['Price']\
+                .transform(lambda x: x.fillna(x.mean()))
+
+df['Total_Sales'] = df['Quantity'] * df['Price']
+
+print(df.groupby('Product')['Total_Sales'].sum().idxmax())
+
+df.groupby('Product')['Total_Sales'].sum().plot(kind='bar')
+plt.show()
+
+##2
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("temperature.csv")
+
+df['Min_Temp'].fillna(df['Min_Temp'].mean(), inplace=True)
+df['Max_Temp'].fillna(df['Max_Temp'].mean(), inplace=True)
+
+df['Average_Temp'] = (df['Min_Temp'] + df['Max_Temp']) / 2
+
+print(df.loc[df['Average_Temp'].idxmax(), 'Date'])
+
+plt.plot(df['Date'], df['Average_Temp'])
+plt.show()
+
+##3
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("traffic.csv")
+
+df['Vehicle_Count'].fillna(0, inplace=True)
+
+print("Total:", df['Vehicle_Count'].sum())
+print("Average:", df['Vehicle_Count'].mean())
+
+print(df.loc[df['Vehicle_Count'].idxmax(), 'Date'])
+
+plt.plot(df['Date'], df['Vehicle_Count'])
+plt.show()
+
+##4
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("ratings.csv")
+
+df.dropna(subset=['Customer_Rating'], inplace=True)
+
+print("Average Rating:", df['Customer_Rating'].mean())
+
+top3 = df.nlargest(3, 'Customer_Rating')
+print(top3)
+
+top5 = df.nlargest(5, 'Customer_Rating')
+
+plt.bar(top5['Product_Name'], top5['Customer_Rating'])
+plt.show()
+
+##5
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv("students.csv")
+
+df['Completion_Status'].fillna("No", inplace=True)
+
+counts = df['Completion_Status'].value_counts()
+
+print(counts)
+
+plt.pie(counts, labels=counts.index, autopct='%1.1f%%')
+plt.show()
