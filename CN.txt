@@ -1,17 +1,20 @@
 ##1
 import pandas as pd
 import matplotlib.pyplot as plt
+from google.colab import files
+
+print("Please upload the sales.csv file:")
+files.upload()
 
 df = pd.read_csv("sales.csv")
 
-df['Price'] = df.groupby('Product')['Price']\
+df['Price'] = df.groupby('Item Type')['Units Sold']\
                 .transform(lambda x: x.fillna(x.mean()))
+df['Total_Sales'] = df['Price'] * df['Units Sold']
 
-df['Total_Sales'] = df['Quantity'] * df['Price']
+print(df.groupby('Item Type')['Total_Sales'].sum().idxmax())
 
-print(df.groupby('Product')['Total_Sales'].sum().idxmax())
-
-df.groupby('Product')['Total_Sales'].sum().plot(kind='bar')
+df.groupby('Item Type')['Total_Sales'].sum().plot(kind='bar')
 plt.show()
 
 ##2
