@@ -1,0 +1,172 @@
+##1
+ORG 0000H
+
+; -------- ADDITION --------
+MOV A, #25H      ; Load first number into A
+MOV R0, #15H     ; Load second number into R0
+ADD A, R0        ; A = A + R0
+MOV 30H, A       ; Store result at memory location 30H
+
+; -------- SUBTRACTION --------
+MOV A, #25H      ; Load first number
+MOV R1, #10H     ; Load second number
+SUBB A, R1       ; A = A - R1
+MOV 31H, A       ; Store result at memory location 31H
+
+; -------- MULTIPLICATION --------
+MOV A, #05H      ; First number
+MOV B, #04H      ; Second number
+MUL AB           ; Multiply A and B
+MOV 32H, A       ; Store lower byte result
+MOV 33H, B       ; Store higher byte result
+
+; -------- DIVISION --------
+MOV A, #20H      ; Dividend
+MOV B, #04H      ; Divisor
+DIV AB           ; A = Quotient, B = Remainder
+MOV 34H, A       ; Store quotient
+MOV 35H, B       ; Store remainder
+
+END
+##2
+ORG 0000H
+
+MOV R0, #25H     ; Load value 25H into R0
+MOV A, R0        ; Transfer data from R0 to Accumulator
+MOV R1, A        ; Transfer data from Accumulator to R1
+
+END
+##3
+ORG 0000H
+
+MOV 30H, #55H    ; Store 55H in memory location 30H
+MOV A, 30H       ; Transfer data from memory to Accumulator
+MOV R2, A        ; Transfer data from Accumulator to register R2
+
+END
+##4
+ORG 0000H
+
+MOV A, #25H      ; Load first number into A
+MOV R0, #20H     ; Load second number into R0
+
+CLR C            ; Clear carry flag
+SUBB A, R0       ; Compare A and R0
+
+JZ EQUAL         ; Jump if equal
+JC LESS          ; Jump if A < R0
+
+; A > R0
+MOV 30H, #01H
+SJMP STOP
+
+EQUAL:
+MOV 30H, #02H
+SJMP STOP
+
+LESS:
+MOV 30H, #03H
+
+STOP:
+END
+##5
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 10;
+    unsigned char b = 5;
+    unsigned int add, mul;
+
+    add = a + b;      // Addition
+    mul = a * b;      // Multiplication
+
+    while(1);
+}
+##6
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 20;
+    unsigned char b = 4;
+    unsigned char sub, div;
+
+    sub = a - b;      // Subtraction
+    div = a / b;      // Division
+
+    while(1);
+}
+##7
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 15;
+    unsigned char b = 5;
+
+    unsigned char add, sub, mul, div;
+
+    add = a + b;
+    sub = a - b;
+    mul = a * b;
+    div = a / b;
+
+    while(1);
+}
+##8
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 0x0F;
+    unsigned char b = 0xF0;
+
+    unsigned char and_op, or_op, xor_op, not_op;
+
+    and_op = a & b;   // AND
+    or_op  = a | b;   // OR
+    xor_op = a ^ b;   // XOR
+    not_op = ~a;      // NOT
+
+    while(1);
+}
+##9
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 25;
+    unsigned char b = 20;
+
+    if(a > b)
+    {
+        P1 = 0x01;    // a is greater
+    }
+    else if(a < b)
+    {
+        P1 = 0x02;    // b is greater
+    }
+    else
+    {
+        P1 = 0x03;    // both are equal
+    }
+
+    while(1);
+}
+##10
+int led = 13;
+
+void setup()
+{
+    pinMode(led, OUTPUT);
+}
+
+void loop()
+{
+    digitalWrite(led, HIGH);
+    delay(1000);
+
+    digitalWrite(led, LOW);
+    delay(1000);
+}
