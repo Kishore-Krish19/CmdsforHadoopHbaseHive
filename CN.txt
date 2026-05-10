@@ -1,83 +1,172 @@
 ##1
-import pandas as pd
-import matplotlib.pyplot as plt
-from google.colab import files
+ORG 0000H
 
-print("Please upload the sales.csv file:")
-files.upload()
+; -------- ADDITION --------
+MOV A, #25H      ; Load first number into A
+MOV R0, #15H     ; Load second number into R0
+ADD A, R0        ; A = A + R0
+MOV 30H, A       ; Store result at memory location 30H
 
-df = pd.read_csv("sales.csv")
+; -------- SUBTRACTION --------
+MOV A, #25H      ; Load first number
+MOV R1, #10H     ; Load second number
+SUBB A, R1       ; A = A - R1
+MOV 31H, A       ; Store result at memory location 31H
 
-df['Price'] = df.groupby('Item Type')['Units Sold']\
-                .transform(lambda x: x.fillna(x.mean()))
-df['Total_Sales'] = df['Price'] * df['Units Sold']
+; -------- MULTIPLICATION --------
+MOV A, #05H      ; First number
+MOV B, #04H      ; Second number
+MUL AB           ; Multiply A and B
+MOV 32H, A       ; Store lower byte result
+MOV 33H, B       ; Store higher byte result
 
-print(df.groupby('Item Type')['Total_Sales'].sum().idxmax())
+; -------- DIVISION --------
+MOV A, #20H      ; Dividend
+MOV B, #04H      ; Divisor
+DIV AB           ; A = Quotient, B = Remainder
+MOV 34H, A       ; Store quotient
+MOV 35H, B       ; Store remainder
 
-df.groupby('Item Type')['Total_Sales'].sum().plot(kind='bar')
-plt.show()
-
+END
 ##2
-import pandas as pd
-import matplotlib.pyplot as plt
+ORG 0000H
 
-df = pd.read_csv("temperature.csv")
+MOV R0, #25H     ; Load value 25H into R0
+MOV A, R0        ; Transfer data from R0 to Accumulator
+MOV R1, A        ; Transfer data from Accumulator to R1
 
-df['Min_Temp'].fillna(df['Min_Temp'].mean(), inplace=True)
-df['Max_Temp'].fillna(df['Max_Temp'].mean(), inplace=True)
-
-df['Average_Temp'] = (df['Min_Temp'] + df['Max_Temp']) / 2
-
-print(df.loc[df['Average_Temp'].idxmax(), 'Date'])
-
-plt.plot(df['Date'], df['Average_Temp'])
-plt.show()
-
+END
 ##3
-import pandas as pd
-import matplotlib.pyplot as plt
+ORG 0000H
 
-df = pd.read_csv("traffic.csv")
+MOV 30H, #55H    ; Store 55H in memory location 30H
+MOV A, 30H       ; Transfer data from memory to Accumulator
+MOV R2, A        ; Transfer data from Accumulator to register R2
 
-df['Vehicle_Count'].fillna(0, inplace=True)
-
-print("Total:", df['Vehicle_Count'].sum())
-print("Average:", df['Vehicle_Count'].mean())
-
-print(df.loc[df['Vehicle_Count'].idxmax(), 'Date'])
-
-plt.plot(df['Date'], df['Vehicle_Count'])
-plt.show()
-
+END
 ##4
-import pandas as pd
-import matplotlib.pyplot as plt
+ORG 0000H
 
-df = pd.read_csv("ratings.csv")
+MOV A, #25H      ; Load first number into A
+MOV R0, #20H     ; Load second number into R0
 
-df.dropna(subset=['Customer_Rating'], inplace=True)
+CLR C            ; Clear carry flag
+SUBB A, R0       ; Compare A and R0
 
-print("Average Rating:", df['Customer_Rating'].mean())
+JZ EQUAL         ; Jump if equal
+JC LESS          ; Jump if A < R0
 
-top3 = df.nlargest(3, 'Customer_Rating')
-print(top3)
+; A > R0
+MOV 30H, #01H
+SJMP STOP
 
-top5 = df.nlargest(5, 'Customer_Rating')
+EQUAL:
+MOV 30H, #02H
+SJMP STOP
 
-plt.bar(top5['Product_Name'], top5['Customer_Rating'])
-plt.show()
+LESS:
+MOV 30H, #03H
 
+STOP:
+END
 ##5
-import pandas as pd
-import matplotlib.pyplot as plt
+#include <reg51.h>
 
-df = pd.read_csv("students.csv")
+void main()
+{
+    unsigned char a = 10;
+    unsigned char b = 5;
+    unsigned int add, mul;
 
-df['Completion_Status'].fillna("No", inplace=True)
+    add = a + b;      // Addition
+    mul = a * b;      // Multiplication
 
-counts = df['Completion_Status'].value_counts()
+    while(1);
+}
+##6
+#include <reg51.h>
 
-print(counts)
+void main()
+{
+    unsigned char a = 20;
+    unsigned char b = 4;
+    unsigned char sub, div;
 
-plt.pie(counts, labels=counts.index, autopct='%1.1f%%')
-plt.show()
+    sub = a - b;      // Subtraction
+    div = a / b;      // Division
+
+    while(1);
+}
+##7
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 15;
+    unsigned char b = 5;
+
+    unsigned char add, sub, mul, div;
+
+    add = a + b;
+    sub = a - b;
+    mul = a * b;
+    div = a / b;
+
+    while(1);
+}
+##8
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 0x0F;
+    unsigned char b = 0xF0;
+
+    unsigned char and_op, or_op, xor_op, not_op;
+
+    and_op = a & b;   // AND
+    or_op  = a | b;   // OR
+    xor_op = a ^ b;   // XOR
+    not_op = ~a;      // NOT
+
+    while(1);
+}
+##9
+#include <reg51.h>
+
+void main()
+{
+    unsigned char a = 25;
+    unsigned char b = 20;
+
+    if(a > b)
+    {
+        P1 = 0x01;    // a is greater
+    }
+    else if(a < b)
+    {
+        P1 = 0x02;    // b is greater
+    }
+    else
+    {
+        P1 = 0x03;    // both are equal
+    }
+
+    while(1);
+}
+##10
+int led = 13;
+
+void setup()
+{
+    pinMode(led, OUTPUT);
+}
+
+void loop()
+{
+    digitalWrite(led, HIGH);
+    delay(1000);
+
+    digitalWrite(led, LOW);
+    delay(1000);
+}
