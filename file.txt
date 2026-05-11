@@ -170,3 +170,32 @@ void loop()
     digitalWrite(led, LOW);
     delay(1000);
 }
+##11
+from machine import Pin
+from utime import sleep
+
+sleep(0.01) # Wait for USB to connect
+print("Hello, Pi Pico!")
+
+led = Pin(5, Pin.OUT)
+while True:
+  led.toggle()
+  sleep(0.5)
+
+##12
+from machine import Pin
+import dht
+import time
+
+sensor = dht.DHT22(Pin(15))
+
+while True:
+    sensor.measure()
+
+    temp = sensor.temperature()
+    hum = sensor.humidity()
+
+    print("Temperature:", temp, "°C")
+    print("Humidity:", hum, "%")
+
+    time.sleep(2)
