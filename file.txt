@@ -1,201 +1,259 @@
-##1
-ORG 0000H
+-----------------------exp8
+---------index.html---------
 
-; -------- ADDITION --------
-MOV A, #25H      ; Load first number into A
-MOV R0, #15H     ; Load second number into R0
-ADD A, R0        ; A = A + R0
-MOV 30H, A       ; Store result at memory location 30H
+<html>
+<head>
+    <title>Simple Home Page</title>
+</head>
 
-; -------- SUBTRACTION --------
-MOV A, #25H      ; Load first number
-MOV R1, #10H     ; Load second number
-SUBB A, R1       ; A = A - R1
-MOV 31H, A       ; Store result at memory location 31H
+<body>
 
-; -------- MULTIPLICATION --------
-MOV A, #05H      ; First number
-MOV B, #04H      ; Second number
-MUL AB           ; Multiply A and B
-MOV 32H, A       ; Store lower byte result
-MOV 33H, B       ; Store higher byte result
+    <!-- Website Logo -->
 
-; -------- DIVISION --------
-MOV A, #20H      ; Dividend
-MOV B, #04H      ; Divisor
-DIV AB           ; A = Quotient, B = Remainder
-MOV 34H, A       ; Store quotient
-MOV 35H, B       ; Store remainder
+    <center>
+        <img src="logo.png" width="120" height="120">
+        <h1>My Website</h1>
+    </center>
 
-END
-##2
-ORG 0000H
+    <hr>
 
-MOV R0, #25H     ; Load value 25H into R0
-MOV A, R0        ; Transfer data from R0 to Accumulator
-MOV R1, A        ; Transfer data from Accumulator to R1
+    <!-- Navigation Links -->
 
-END
-##3
-ORG 0000H
+    <center>
+        <a href="index.html">Home</a> |
+        <a href="about.html">About</a> |
+        <a href="services.html">Services</a> |
+        <a href="contact.html">Contact</a>
+    </center>
 
-MOV 30H, #55H    ; Store 55H in memory location 30H
-MOV A, 30H       ; Transfer data from memory to Accumulator
-MOV R2, A        ; Transfer data from Accumulator to register R2
+    <hr>
 
-END
-##4
-ORG 0000H
+    <!-- Banner -->
 
-MOV A, #25H      ; Load first number into A
-MOV R0, #20H     ; Load second number into R0
+    <center>
+        <img src="banner.jpg" width="800" height="200">
+    </center>
 
-CLR C            ; Clear carry flag
-SUBB A, R0       ; Compare A and R0
+    <hr>
 
-JZ EQUAL         ; Jump if equal
-JC LESS          ; Jump if A < R0
+    <!-- Welcome Section -->
 
-; A > R0
-MOV 30H, #01H
-SJMP STOP
+    <h2>Welcome</h2>
 
-EQUAL:
-MOV 30H, #02H
-SJMP STOP
+    <p>
+        Welcome to our website created using 
+        :contentReference[oaicite:0]{index=0}.
+    </p>
 
-LESS:
-MOV 30H, #03H
+    <hr>
 
-STOP:
-END
-##5
-#include <reg51.h>
+    <!-- Quick Links -->
 
-void main()
-{
-    unsigned char a = 10;
-    unsigned char b = 5;
-    unsigned int add, mul;
+    <h2>Quick Links</h2>
 
-    add = a + b;      // Addition
-    mul = a * b;      // Multiplication
+    <ul>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="services.html">Our Services</a></li>
+        <li><a href="contact.html">Contact Us</a></li>
+    </ul>
 
-    while(1);
-}
-##6
-#include <reg51.h>
+    <hr>
 
-void main()
-{
-    unsigned char a = 20;
-    unsigned char b = 4;
-    unsigned char sub, div;
+    <!-- Table Section -->
 
-    sub = a - b;      // Subtraction
-    div = a / b;      // Division
+    <h2>Services Table</h2>
 
-    while(1);
-}
-##7
-#include <reg51.h>
+    <table border="1" cellpadding="10">
 
-void main()
-{
-    unsigned char a = 15;
-    unsigned char b = 5;
+        <tr>
+            <th>S.No</th>
+            <th>Service Name</th>
+            <th>Price</th>
+        </tr>
 
-    unsigned char add, sub, mul, div;
+        <tr>
+            <td>1</td>
+            <td>Web Design</td>
+            <td>5000</td>
+        </tr>
 
-    add = a + b;
-    sub = a - b;
-    mul = a * b;
-    div = a / b;
+        <tr>
+            <td>2</td>
+            <td>Mobile Design</td>
+            <td>7000</td>
+        </tr>
 
-    while(1);
-}
-##8
-#include <reg51.h>
+        <tr>
+            <td>3</td>
+            <td>Hosting</td>
+            <td>3000</td>
+        </tr>
 
-void main()
-{
-    unsigned char a = 0x0F;
-    unsigned char b = 0xF0;
+    </table>
 
-    unsigned char and_op, or_op, xor_op, not_op;
+    <hr>
 
-    and_op = a & b;   // AND
-    or_op  = a | b;   // OR
-    xor_op = a ^ b;   // XOR
-    not_op = ~a;      // NOT
+    <!-- Search Box -->
 
-    while(1);
-}
-##9
-#include <reg51.h>
+    <h2>Search</h2>
 
-void main()
-{
-    unsigned char a = 25;
-    unsigned char b = 20;
+    <form>
 
-    if(a > b)
-    {
-        P1 = 0x01;    // a is greater
-    }
-    else if(a < b)
-    {
-        P1 = 0x02;    // b is greater
-    }
-    else
-    {
-        P1 = 0x03;    // both are equal
-    }
+        <input type="text" placeholder="Search here">
 
-    while(1);
-}
-##10
-int led = 13;
+        <input type="submit" value="Search">
 
-void setup()
-{
-    pinMode(led, OUTPUT);
-}
+    </form>
 
-void loop()
-{
-    digitalWrite(led, HIGH);
-    delay(1000);
+    <hr>
 
-    digitalWrite(led, LOW);
-    delay(1000);
-}
-##11
-from machine import Pin
-from utime import sleep
+    <!-- Footer -->
 
-sleep(0.01) # Wait for USB to connect
-print("Hello, Pi Pico!")
+    <center>
+        <p>© 2026 My Website. All Rights Reserved.</p>
+    </center>
 
-led = Pin(5, Pin.OUT)
-while True:
-  led.toggle()
-  sleep(0.5)
+</body>
+</html>
 
-##12
-from machine import Pin
-import dht
-import time
+------------------------------------exp 9
+-----index.html-----
+<html>
+<head>
+    <title>My Website</title>
+</head>
+<body>
+    <h1>My Website</h1>
+    <hr>
+    <!-- Navigation Menu -->
 
-sensor = dht.DHT22(Pin(15))
+    <a href="index.html">Home</a> |
+    <a href="about.html">About</a> |
+    <a href="services.html">Services</a> |
+    <a href="contact.html">Contact</a>
 
-while True:
-    sensor.measure()
+    <hr>
 
-    temp = sensor.temperature()
-    hum = sensor.humidity()
+    <!-- Search Interface -->
 
-    print("Temperature:", temp, "°C")
-    print("Humidity:", hum, "%")
+    <h2>Search</h2>
 
-    time.sleep(2)
+    <form>
+        <input type="text" placeholder="Search here">
+        <input type="submit" value="Search">
+    </form>
+
+    <hr>
+
+    <!-- Home Page Content -->
+
+    <h2>Welcome to My Website</h2>
+
+    <p>
+        This website is created using 
+        :contentReference[oaicite:0]{index=0}.
+    </p>
+
+    <p>
+        Use the navigation links above to visit inside pages.
+    </p>
+
+</body>
+</html>
+-----------------about.html--------------
+<html>
+<head>
+    <title>About Page</title>
+</head>
+
+<body>
+
+    <h1>About Page</h1>
+
+    <hr>
+
+    <a href="index.html">Home</a> |
+    <a href="services.html">Services</a> |
+    <a href="contact.html">Contact</a>
+
+    <hr>
+
+    <p>
+        This is the About page of the website.
+    </p>
+
+</body>
+</html>
+
+--------service.html--------
+<html>
+<head>
+    <title>Services Page</title>
+</head>
+
+<body>
+
+    <h1>Services Page</h1>
+
+    <hr>
+
+    <a href="index.html">Home</a> |
+    <a href="about.html">About</a> |
+    <a href="contact.html">Contact</a>
+
+    <hr>
+
+    <ul>
+        <li>Web Design</li>
+        <li>Mobile Design</li>
+        <li>Website Development</li>
+    </ul>
+
+</body>
+</html>
+--------------contact page------------
+<html>
+<head>
+    <title>Contact Page</title>
+</head>
+
+<body>
+
+    <h1>Contact Page</h1>
+
+    <hr>
+
+    <a href="index.html">Home</a> |
+    <a href="about.html">About</a> |
+    <a href="services.html">Services</a>
+
+    <hr>
+
+    <form>
+
+        Name:
+        <input type="text">
+
+        <br><br>
+
+        Email:
+        <input type="email">
+
+        <br><br>
+
+        Message:
+
+        <br>
+
+        <textarea rows="5" cols="30"></textarea>
+
+        <br><br>
+
+        <input type="submit" value="Send">
+
+    </form>
+
+</body>
+</html>
+
+
