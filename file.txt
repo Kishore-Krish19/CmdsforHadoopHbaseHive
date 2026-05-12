@@ -1,259 +1,60 @@
------------------------exp8
----------index.html---------
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
-<html>
-<head>
-    <title>Simple Home Page</title>
-</head>
+    <modelVersion>4.0.0</modelVersion>
 
-<body>
+    <groupId>org.example</groupId>
+    <artifactId>SeleniumTestNG</artifactId>
+    <version>1.0-SNAPSHOT</version>
 
-    <!-- Website Logo -->
+    <dependencies>
 
-    <center>
-        <img src="logo.png" width="120" height="120">
-        <h1>My Website</h1>
-    </center>
+        <!-- Selenium -->
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-java</artifactId>
+            <version>4.21.0</version>
+        </dependency>
 
-    <hr>
+        <!-- TestNG -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+            <version>7.10.2</version>
+            <scope>test</scope>
+        </dependency>
 
-    <!-- Navigation Links -->
+    </dependencies>
 
-    <center>
-        <a href="index.html">Home</a> |
-        <a href="about.html">About</a> |
-        <a href="services.html">Services</a> |
-        <a href="contact.html">Contact</a>
-    </center>
+</project>
 
-    <hr>
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.annotations.Test;
 
-    <!-- Banner -->
+public class LoginTest {
 
-    <center>
-        <img src="banner.jpg" width="800" height="200">
-    </center>
+    @Test
+    public void loginTest() {
 
-    <hr>
+        WebDriver driver = new ChromeDriver();
 
-    <!-- Welcome Section -->
+        driver.get("https://www.saucedemo.com");
 
-    <h2>Welcome</h2>
+        driver.findElement(By.id("user-name"))
+                .sendKeys("standard_user");
 
-    <p>
-        Welcome to our website created using 
-        :contentReference[oaicite:0]{index=0}.
-    </p>
+        driver.findElement(By.id("password"))
+                .sendKeys("secret_sauce");
 
-    <hr>
+        driver.findElement(By.id("login-button"))
+                .click();
 
-    <!-- Quick Links -->
+        System.out.println("Login Successful");
 
-    <h2>Quick Links</h2>
-
-    <ul>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="services.html">Our Services</a></li>
-        <li><a href="contact.html">Contact Us</a></li>
-    </ul>
-
-    <hr>
-
-    <!-- Table Section -->
-
-    <h2>Services Table</h2>
-
-    <table border="1" cellpadding="10">
-
-        <tr>
-            <th>S.No</th>
-            <th>Service Name</th>
-            <th>Price</th>
-        </tr>
-
-        <tr>
-            <td>1</td>
-            <td>Web Design</td>
-            <td>5000</td>
-        </tr>
-
-        <tr>
-            <td>2</td>
-            <td>Mobile Design</td>
-            <td>7000</td>
-        </tr>
-
-        <tr>
-            <td>3</td>
-            <td>Hosting</td>
-            <td>3000</td>
-        </tr>
-
-    </table>
-
-    <hr>
-
-    <!-- Search Box -->
-
-    <h2>Search</h2>
-
-    <form>
-
-        <input type="text" placeholder="Search here">
-
-        <input type="submit" value="Search">
-
-    </form>
-
-    <hr>
-
-    <!-- Footer -->
-
-    <center>
-        <p>© 2026 My Website. All Rights Reserved.</p>
-    </center>
-
-</body>
-</html>
-
-------------------------------------exp 9
------index.html-----
-<html>
-<head>
-    <title>My Website</title>
-</head>
-<body>
-    <h1>My Website</h1>
-    <hr>
-    <!-- Navigation Menu -->
-
-    <a href="index.html">Home</a> |
-    <a href="about.html">About</a> |
-    <a href="services.html">Services</a> |
-    <a href="contact.html">Contact</a>
-
-    <hr>
-
-    <!-- Search Interface -->
-
-    <h2>Search</h2>
-
-    <form>
-        <input type="text" placeholder="Search here">
-        <input type="submit" value="Search">
-    </form>
-
-    <hr>
-
-    <!-- Home Page Content -->
-
-    <h2>Welcome to My Website</h2>
-
-    <p>
-        This website is created using 
-        :contentReference[oaicite:0]{index=0}.
-    </p>
-
-    <p>
-        Use the navigation links above to visit inside pages.
-    </p>
-
-</body>
-</html>
------------------about.html--------------
-<html>
-<head>
-    <title>About Page</title>
-</head>
-
-<body>
-
-    <h1>About Page</h1>
-
-    <hr>
-
-    <a href="index.html">Home</a> |
-    <a href="services.html">Services</a> |
-    <a href="contact.html">Contact</a>
-
-    <hr>
-
-    <p>
-        This is the About page of the website.
-    </p>
-
-</body>
-</html>
-
---------service.html--------
-<html>
-<head>
-    <title>Services Page</title>
-</head>
-
-<body>
-
-    <h1>Services Page</h1>
-
-    <hr>
-
-    <a href="index.html">Home</a> |
-    <a href="about.html">About</a> |
-    <a href="contact.html">Contact</a>
-
-    <hr>
-
-    <ul>
-        <li>Web Design</li>
-        <li>Mobile Design</li>
-        <li>Website Development</li>
-    </ul>
-
-</body>
-</html>
---------------contact page------------
-<html>
-<head>
-    <title>Contact Page</title>
-</head>
-
-<body>
-
-    <h1>Contact Page</h1>
-
-    <hr>
-
-    <a href="index.html">Home</a> |
-    <a href="about.html">About</a> |
-    <a href="services.html">Services</a>
-
-    <hr>
-
-    <form>
-
-        Name:
-        <input type="text">
-
-        <br><br>
-
-        Email:
-        <input type="email">
-
-        <br><br>
-
-        Message:
-
-        <br>
-
-        <textarea rows="5" cols="30"></textarea>
-
-        <br><br>
-
-        <input type="submit" value="Send">
-
-    </form>
-
-</body>
-</html>
-
-
+        driver.quit();
+    }
+}
