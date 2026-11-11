@@ -1,60 +1,1054 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+Developer Console 
 
-    <modelVersion>4.0.0</modelVersion>
+https://gcee7-dev-ed.develop.my.salesforce.com/_ui/common/apex/debug/ApexCSIPage
 
-    <groupId>org.example</groupId>
-    <artifactId>SeleniumTestNG</artifactId>
-    <version>1.0-SNAPSHOT</version>
+SetUp Page
 
-    <dependencies>
+https://gcee7-dev-ed.develop.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
 
-        <!-- Selenium -->
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <version>4.21.0</version>
-        </dependency>
 
-        <!-- TestNG -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>7.10.2</version>
-            <scope>test</scope>
-        </dependency>
 
-    </dependencies>
+##1
 
-</project>
+1. Setup → Roles → Set Up Roles.
+2. Create these five roles:
+        Role        	    Reports To
+        Sales Director	    CEO
+        East Manager	    Sales Director
+        West Manager	    Sales Director
+        East Sales Rep	    Sales Director
+        West Sales Rep	    Sales Director
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
-import org.testng.annotations.Test;
+1. Go to Setup → Sharing Settings.
+2. Click Edit under Organization-Wide Defaults.
+3. Find Opportunity.
+4. Set Default Internal Access = Private.
+5. Keep Grant Access Using Hierarchies enabled.
+6. Click Save.
 
-public class LoginTest {
+1. Go to Setup → Public Groups.
+2. Click New.
+3. Enter:
+        Label: Sales Support Team
+        Group Name: Sales_Support_Team
+4. Click Save.
 
-    @Test
-    public void loginTest() {
+1. Go to Setup → Sharing Settings.
+2. Find Opportunity Sharing Rules.
+3. Click New.
+4. Enter:
+        Field	    Value
+        Label	    Sales Support Access
+        Rule Type	Based on record owner
 
-        WebDriver driver = new ChromeDriver();
 
-        driver.get("https://www.saucedemo.com");
+___________________________________________________________________________________________________________________________________
 
-        driver.findElement(By.id("user-name"))
-                .sendKeys("standard_user");
+##2
 
-        driver.findElement(By.id("password"))
-                .sendKeys("secret_sauce");
+1. In Developer Console, click File → New → Apex Trigger.
+2. Enter the following details:
+Name: PreventAccountDeletion
+sObject: Account
+3. Click Submit.
 
-        driver.findElement(By.id("login-button"))
-                .click();
-
-        System.out.println("Login Successful");
-
-        driver.quit();
+trigger PreventAccountDeletion on Account (before delete) {
+    Set<Id> accountIds = Trigger.oldMap.keySet();
+    List<Opportunity> openOpportunities = [
+        SELECT Id, AccountId, StageName
+        FROM Opportunity
+        WHERE AccountId IN :accountIds
+        AND StageName NOT IN ('Closed Won', 'Closed Lost')
+    ];
+    Set<Id> accountIdsWithOpenOpp = new Set<Id>();
+    for (Opportunity opp : openOpportunities) {
+        accountIdsWithOpenOpp.add(opp.AccountId);
+    }
+    for (Account acc : Trigger.old) {
+        if (accountIdsWithOpenOpp.contains(acc.Id)) {
+            acc.addError(
+                'Cannot delete this Account because it has Open Opportunities.'
+            );
+        }
     }
 }
+4. Ctrl + S
+5. App Launcher - sales - account 
+6. create an Account named Test Company.
+7. Create a related Opportunity with Stage Prospecting.
+Try deleting the Account. Verify that deletion is blocked
+8. Create a related Opportunity named Test Won Opportunity.
+9. Set Stage to Closed Won.
+10. Save the Opportunity.
+Try deleting the Account.
+11. Change Opportunity Stage to Closed Lost.
+12. Enter the required Closed Reason.
+13. Save the Opportunity.
+Delete the Account. Verify successful deletion
+
+___________________________________________________________________________________________________________________________________
+
+# 3
+
+1. Go to Setup → Flows.
+2. Click New Flow.
+3. Select Record-Triggered Flow.
+4. Click Create.
+5. Set the following:
+        Field	                Value
+        Object	                Opportunity
+        Trigger	                A record is updated
+        Condition Requirements	All Conditions Are Met
+        Field	                StageName
+        Operator	        Equals
+        Value	                Closed Won
+        When to Run	        Only when a record is updated to meet the condition requirements
+        Optimize For        	Actions and Related Records
+
+
+
+1. Click the + icon.
+2. Select Update Records.
+3. Label: Update Account Type.
+4. Select Specify conditions to identify records, and set fields individually.
+5. Object: Account.
+6. 
+Field	        Operator	Value
+Account ID	Equals	        Triggering Opportunity → Account ID
+7. 
+Field	        Value
+Account Type	Customer - Direct
+
+
+1. Click Save.
+2. Flow Label: Update Account Type on Closed Won.
+3. Click Save.
+4. Click Activate.
+
+___________________________________________________________________________________________________________________________________
+
+#4 
+
+1. Click File → New → Apex Trigger
+2. Enter the following details:
+Trigger Name: AutoCreateContact
+sObject: Account
+3. Click Submit.
+
+trigger AutoCreateContact on Account (after insert) {
+    List<Contact> contactList = new List<Contact>();
+    for (Account acc : Trigger.new) {
+        Contact con = new Contact();
+        con.FirstName = 'Default';
+        con.LastName = 'Contact';
+        con.AccountId = acc.Id;
+        contactList.add(con);
+    }
+    if (!contactList.isEmpty()) {
+        insert contactList;
+    }
+}
+
+4. App Launcher - sales - account - new
+5. Account Name : ABC Technologies
+6. Industry : Technology
+7. Save
+8. Open the newly created ABC Technologies Account.
+9. Click the Related tab.
+10. Find the Contacts section.
+(to verify that in the contact section is created automatically)
+
+_____________________________________________________________________________________________________________________________________
+
+#5
+
+1. Open Salesforce.
+2. Click Gear Icon → Developer Console.
+3. Select File → New → Apex Class.
+4. Enter the class name:
+        UpdateContactMailingCity
+
+public class UpdateContactMailingCity implements Queueable {
+
+    private Set<Id> accountIds;
+
+    public UpdateContactMailingCity(Set<Id> ids) {
+        accountIds = ids;
+    }
+
+    public void execute(QueueableContext context) {
+
+        List<Contact> contacts = [
+            SELECT Id, MailingCity, Account.BillingCity
+            FROM Contact
+            WHERE AccountId IN :accountIds
+        ];
+
+        for (Contact c : contacts) {
+            c.MailingCity = c.Account.BillingCity;
+        }
+
+        if (!contacts.isEmpty()) {
+            update contacts;
+        }
+    }
+}
+5. Ctrl + S
+6. In Developer Console, click File → New → Apex Trigger.
+7. Enter:
+        Trigger Name: AccountBillingCityTrigger
+        sObject: Account
+8. Click Submit.
+
+
+trigger AccountBillingCityTrigger on Account (after update) {
+
+    Set<Id> accountIds = new Set<Id>();
+
+    for (Account acc : Trigger.new) {
+
+        Account oldAcc = Trigger.oldMap.get(acc.Id);
+
+        if (acc.BillingCity != oldAcc.BillingCity) {
+            accountIds.add(acc.Id);
+        }
+    }
+
+    if (!accountIds.isEmpty()) {
+        System.enqueueJob(
+            new UpdateContactMailingCity(accountIds)
+        );
+    }
+}
+9. Ctrl + S
+10. In Developer Console, click Debug -> Open Execute Anonymous Window
+11. 
+Account acc = new Account(
+    Name = 'ABC Technologies',
+    BillingCity = 'Chennai'
+);
+insert acc;
+
+Contact con = new Contact(
+    FirstName = 'Test',
+    LastName = 'Contact',
+    AccountId = acc.Id,
+    MailingCity = 'Coimbatore'
+);
+insert con;
+
+acc.BillingCity = 'Erode';
+update acc;
+
+System.debug('Account Billing City Updated');
+
+12. Click execute. 
+
+
+Contact con = [
+    SELECT Name, MailingCity
+    FROM Contact
+    WHERE LastName = 'Contact'
+    ORDER BY CreatedDate DESC
+    LIMIT 1
+];
+
+System.debug('Contact Name: ' + con.Name);
+System.debug('Updated Mailing City: ' + con.MailingCity);
+
+
+13. again exceute
+14. Go to Setup -> Apex Jobs -> Queueable job.(you can see this)
+
+___________________________________________________________________________________________________________________________________
+
+#6
+
+1. Go to Setup → Flows.
+2. Click New Flow.
+3. Select Schedule-Triggered Flow.
+4. Click Create.
+5. Set the following:
+        Field	        Value
+        Object	        Lead
+        Start Date	Today
+        Start Time	12:00 AM
+        Frequency	Daily
+6. Set Entry Conditions:
+        Field	        Operator	        Value
+        Status	        Equals	                Open - Not Contacted
+
+7. Open the Manager tab on the left.
+8. Click New Resource.
+9. Enter the following:
+        Field	        Value
+        Resource Type	Variable
+        API Name	DaysLimit
+        Description	Number of days before a Lead is considered stale
+        Data Type	Number
+        Decimal Places	0
+        Default Value	30
+
+10. Open Manager.
+11. Click New Resource.
+12. Enter:
+        Field	        Value
+        Resource Type	Formula
+        API Name	CutoffDateTime
+        Data Type	Date/Time
+13. In the Formula Editor, enter:
+        $Flow.CurrentDateTime - {!DaysLimit}
+14. Click Check Syntax, if available.
+15. Click Done.
+
+16. Click the + below Start.
+17. Select Decision.
+18. Configure:
+        Field	        Value
+        Label	        Check Stale Lead
+        API Name	Check_Stale_Lead
+19. Under Outcome Details:
+        Field	                Value
+        Outcome Label	        Stale Lead
+        Outcome API Name	Stale_Lead
+20. Under Condition Requirements, select All Conditions Are Met (AND).
+21. Set the condition:
+        Field	        Value
+        Resource	$Record.CreatedDate
+        Operator	Less Than
+        Value	        {!CutoffDateTime}
+22. Click Done.
+
+23. Click the + below the Stale Lead outcome.
+24. Select Update Records.
+25. Configure:
+        Field	        Value
+        Label	        Update Stale Lead
+        API Name	Update_Stale_Lead
+26. Under How to Find Records to Update and Set Their Values, select:
+       Specify conditions to identify records, and set fields individually.
+27. Configure:
+        Object: Lead
+        Condition Requirements: All Conditions Are Met (AND)
+28. Condition:
+        Field	        Operator	Value
+        Lead Id	        Equals	        $Record. Lead Id
+29. Under Set Field Values for the Lead Records:
+        
+        First field:
+                Field	Value
+                Status	Closed - Not Converted
+        
+        Second field:
+                Field	        Value
+                Description	UpdatedDescription
+
+if updateddecrption is not there
+1. Click search  field inside value.
+2. Click + New Resource.
+3. Enter:
+        Field	        Value
+        Resource Type	Formula
+        API Name	UpdatedDescription
+        Data Type	Text
+4. Enter this formula:
+IF(
+    ISBLANK({!$Record.Description}),
+    "Automatically closed because the Lead was not contacted for 30 days.",
+    {!$Record.Description} & " " &
+    "Automatically closed because the Lead was not contacted for 30 days."
+)
+5. Click Done.
+6. Return to Update Records.
+7. Select UpdatedDescription as the Description value.
+
+
+30. Click the + below Update Stale Lead.
+31. Select Create Records.
+32. Configure:
+        Field	                        Value
+        Label	                        Create Stale Lead Task
+        API Name	                Create_Stale_Lead_Task
+        How Many Records to Create	One
+        How to Set Record Field Values	Manually
+33. Object: Task
+34. Now add these field values:
+        Task Field	                Value
+        Subject	                        Stale Lead auto-closed – review if needed
+        Assigned To ID (OwnerId)	$Record.OwnerId
+        Name ID (WhoId)	                $Record.LeadId
+        Status	                        Not Started
+        Priority	                Normal
+        Description                	Lead automatically closed after 30 days without contact
+35. Click Save at the top-right.
+36. Enter:
+        Flow Label: Automatically Close Stale Leads
+        Flow API Name: Automatically_Close_Stale_Leads
+37. Click Save.
+38. Click Activate.
+
+___________________________________________________________________________________________________________________________________
+
+#7
+
+1. Click File → New → Apex Trigger.
+2. Enter the following details:
+        Trigger Name: PreventDuplicateContacts
+        sObject: Contact
+3. Submit
+
+trigger PreventDuplicateContacts on Contact (before insert) {
+
+    Set<String> emails = new Set<String>();
+    Set<String> phones = new Set<String>();
+
+    for (Contact c : Trigger.new) {
+        if (c.Email != null) emails.add(c.Email.toLowerCase());
+        if (c.Phone != null) phones.add(c.Phone);
+    }
+
+    List<Contact> existingContacts = [
+        SELECT Email, Phone
+        FROM Contact
+        WHERE Email IN :emails OR Phone IN :phones
+    ];
+
+    Set<String> existingEmails = new Set<String>();
+    Set<String> existingPhones = new Set<String>();
+
+    for (Contact c : existingContacts) {
+        if (c.Email != null) existingEmails.add(c.Email.toLowerCase());
+        if (c.Phone != null) existingPhones.add(c.Phone);
+    }
+
+    for (Contact c : Trigger.new) {
+        if (c.Email != null && existingEmails.contains(c.Email.toLowerCase())) {
+            c.addError('Duplicate Contact Email!');
+        }
+
+        if (c.Phone != null && existingPhones.contains(c.Phone)) {
+            c.addError('Duplicate Contact Phone!');
+        }
+    }
+}
+4. Ctrl + S
+5. Open Developer Console → Debug → Open Execute Anonymous Window.
+6. Enter:
+Contact c = new Contact(
+    LastName = 'Test Contact',
+    Email = 'test@gmail.com',
+    Phone = '9876543210'
+);
+insert c;
+7. Execute...Successfull execution
+
+8. Open Developer Console → Debug → Open Execute Anonymous Window.
+6. Enter:
+Contact c = new Contact(
+    LastName = 'Test Contact',
+    Email = 'test@gmail.com',
+    Phone = '9876543210'
+);
+insert c;
+7. Execute......it cause an error message 
+
+
+___________________________________________________________________________________________________________________________________
+
+# 8
+
+1. Open Gear Icon → Developer Console.
+2. Click File → New → Apex Class.
+3. Enter Class Name: OverdueTaskBatch.
+
+global class OverdueTaskBatch implements Database.Batchable<SObject> {
+
+    global Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator([
+            SELECT Id, Status, ActivityDate
+            FROM Task
+            WHERE ActivityDate < TODAY
+            AND IsClosed = false
+        ]);
+    }
+
+    global void execute(Database.BatchableContext bc, List<Task> scope) {
+        for (Task t : scope) {
+            t.Status = 'Overdue';
+        }
+        update scope;
+    }
+
+    global void finish(Database.BatchableContext bc) {
+        System.debug('Overdue Tasks updated successfully');
+    }
+}
+4. Ctrl + S
+5. Click Debug → Open Execute Anonymous Window.
+6. Database.executeBatch(new OverdueTaskBatch(), 200);
+7. Click Execute.
+8. Go to Setup → Apex Jobs.
+9. Check that the batch job status is Completed.
+
+___________________________________________________________________________________________________________________________________
+
+# 9
+
+1. Go to Setup.
+2. Search for Flows.
+3. Click New Flow.
+4. Select Screen Flow.
+5. Click the + icon on the Flow canvas.
+6. Select Screen.
+7.         
+        Field	        Value
+        Label	        Case Details
+        API Name	Case_Details
+8. In the left-side Search components box, type Lookup.
+9. Drag the Lookup component into the middle screen.
+10. On the right-side panel, fill:
+        Field	                Value
+        Label	                Select Account
+        API Name	        AccountLookup
+        Object API Name	        Account
+        Field API Name	        Name
+        Maximum Selections	1
+        Required	        True
+11. Search for Text.
+12. Drag the Text component below Account Lookup.
+13. Configure:
+        Field	        Value
+        Label	        Case Subject
+        API Name	SubjectInput
+        Required	Checked
+14. Add Case Description
+15. Search for Long Text Area.
+16. Drag it below Case Subject.
+17. Configure:
+        Field	        Value
+        Label	        Case Description
+        API Name	DescriptionInput
+        Required	Checked
+18. Add Case Origin
+19. Search for Picklist.
+20. Drag the Picklist component below Description.
+21. Configure:
+        Field	        Value
+        Label	        Case Origin
+        API Name	OriginInput
+        Required	Checked
+22. For Choice, create a new resource:
+        Resource Type: Picklist Choice Set
+        API Name: CaseOriginChoices
+        Object: Case
+        Data Type : Picklist
+        Field : Origin
+23. Click Done.
+24. Click + below the first Screen.
+25. Select Screen.
+26. Label: Customer Impact.
+27. API Name: Customer_Impact.
+28. Search for Radio Buttons in Components.
+29. Drag it into the screen.
+30. Configure:
+        Property	Value
+        Label	        Select Customer Impact
+        API Name	ImpactInput
+        Required	True
+31. Click Done.
+32. Open the Manager tab.
+33. Click New Resource.
+34. Enter:
+        Field	        Value
+        Resource Type	Formula
+        API Name	PriorityFormula
+        Data Type	Text
+
+35. Enter this formula:
+CASE(
+    {!ImpactInput},
+    "Entire Organization", "High",
+    "Team", "Medium",
+    "Single User", "Low",
+    "Medium"
+)
+36. Click Done.
+37. Click + below the Formula's position in the flow.
+38. Select Screen.
+39. Label: Review Case Details.
+40. API Name: Review_Case_Details.
+41. Search for Display Text and drag it into the screen.
+42. API : ReviewDetailsText
+43. Enter:
+                PLEASE REVIEW YOUR CASE DETAILS
+                
+                Subject: {!SubjectInput}
+                
+                Description: {!DescriptionInput}
+                
+                Case Origin: {!OriginInput}
+                
+                Customer Impact: {!ImpactInput}
+                
+                Priority: {!PriorityFormula}
+                
+                Please click Next to create your Case.
+46. Click Done.
+47. Click + below the Review Screen.
+48. Select Create Records.
+49. Enter:
+        Field	                        Value
+        Label	                        Create New Case
+        API Name	                Create_New_Case
+        How Many Records	        One
+        How to Set Field Values	        Manually
+        Object	                        Case
+50. Add these field mappings:
+        Case Field	        Value
+        AccountId	        AccountLookup → recordId
+        Subject	                SubjectInput
+        Description	        DescriptionInput
+        Case Origin	        OriginInput
+        Priority	        PriorityFormula
+51. Click + below Create New Case.
+52. Select Get Records.
+53.         
+        Field	                Value
+        Label	                Get Created Case
+        API Name	        Get_Created_Case
+        Object	                Case
+        Condition Field	        Case Id
+        Operator	        Equals
+        Value	                + New Resource
+( Field	        Value
+Resource Type	Variable
+API Name	varCreatedCaseId
+Data Type	Text
+Default Value	Leave blank )
+54. Select:
+        Only the first record.
+        Automatically store all fields.
+55. Click Done.
+56. Click + below Get Records.
+57. Select Screen.
+58. Label: Case Success.
+59. Drag Display Text into the screen.
+60. API Name : SuccessMessage
+61. Enter:
+                CASE CREATED SUCCESSFULLY!
+                
+                Your Case has been created successfully.
+                
+                Case Number: {!Get_Created_Case.CaseNumber}
+                
+                Thank you!
+62. Click Done.
+63. Add another Screen.
+64. Label: Case Creation Error.
+65. Drag Display Text into it.
+66. API Name : ErrorMessage
+67. Enter:
+                CASE CREATION FAILED!
+                
+                Sorry, we could not create your Case.
+                
+                Please try again or contact your administrator.
+68. Click Done.
+69. Click Save.
+70. Enter:
+        Field	        Value
+        Flow Label	Guided Case Logging
+71. Click Save.
+72. Click Activate.
+
+
+
+___________________________________________________________________________________________________________________________________
+
+# 10
+
+1. Go to Setup → Users.
+2. Click New User.
+3. 
+    Field	        What to enter
+    First Name	    Sales
+    Last Name	    Manager
+    Alias	        smanager
+    Email        	Your valid email address
+    Username	    salesmanager.unique2026@example.com
+
+    User License	Salesforce
+    Profile         Standard User
+4. Click Save.
+
+1. Go to Setup → Object Manager.
+2. Select Opportunity.
+3. Click Fields & Relationships → New.
+4. Select Percent as the data type.
+5. Click Next.
+6. Enter:
+           Field Label: Discount Percentage
+           Length: 3
+           Decimal Places: 2
+7. Click Next.
+8.
+            Standard User: Uncheck Visible.
+            Sales Manager: Ensure Visible is checked if this profile exists.
+9. Click Next → Save.
+10. Go to Setup → Permission Sets.
+11. Click New.
+12. Enter:
+           Label: Discount Manager Access
+           API Name: Discount_Manager_Access
+           License: None
+13. Click Save.
+14. Open Discount Manager Access.
+15. Click Object Settings → Opportunities.
+16. Click Edit.
+17. Find Discount Percentage under Field Permissions.
+18. Enable:
+           Read Access
+           Edit Access
+19. Click Save.
+20. Open Discount Manager Access.
+21. Click Manage Assignments.
+22. Click Add Assignments.
+23. Select the Sales Manager user.
+24. Click Next → Assign → Done.
+
+___________________________________________________________________________________________________________________________________
+
+# 11
+
+1. Open Gear Icon → Developer Console.
+2. Go to File → New → Apex Trigger.
+3. Trigger Name: AssignHighValueOpportunity
+   Select Object: Opportunity.
+
+trigger AssignHighValueOpportunity on Opportunity (before update) {
+
+    for (Opportunity opp : Trigger.new) {
+        if (opp.Amount != null && opp.Amount > 10000000) {
+            opp.OwnerId = UserInfo.getUserId();
+        }
+    }
+}
+4. Ctrl + S
+5. Go to Debug → Open Execute Anonymous Window.
+
+Opportunity opp = [
+    SELECT Id, Amount
+    FROM Opportunity
+    LIMIT 1
+];
+opp.Amount = 12000000;
+update opp;
+System.debug('High-value Opportunity updated');
+
+6. Click Execute.(Check the Opportunity record's Owner field.)
+
+___________________________________________________________________________________________________________________________________
+
+# 12
+
+1. Go to Setup → Roles.
+2. Click Set Up Roles.
+3. Click Add Role under GCEE.
+4. Enter:
+           Label: Sales Manager
+           Role Name: Sales_Manager
+5. Click Save.
+6. Go to Setup → Users → New User.
+7. 
+Field	        Value
+First Name	    Sales
+Last Name	    Manager
+Alias	        smanager
+Email	        Your valid email
+Username	    A unique username
+User License	Salesforce
+Profile	        Standard User
+Active	        Checked
+
+8. Open Gear → Developer Console → File → New → Apex Class.
+9. Class Name: DailyOpportunitySummaryBatch
+
+global class DailyOpportunitySummaryBatch
+implements Database.Batchable<SObject>, Database.Stateful, Schedulable {
+
+    global List<String> summaries = new List<String>();
+
+    global Database.QueryLocator start(Database.BatchableContext bc) {
+        return Database.getQueryLocator([
+            SELECT Name, StageName, Amount, CloseDate, Owner.Name
+            FROM Opportunity
+            WHERE CreatedDate = TODAY
+        ]);
+    }
+
+    global void execute(Database.BatchableContext bc, List<Opportunity> scope) {
+        for (Opportunity opp : scope) {
+            summaries.add(
+                opp.Name + ' | ' + opp.StageName +
+                ' | Amount: ' + opp.Amount +
+                ' | Owner: ' + opp.Owner.Name
+            );
+        }
+    }
+
+    global void finish(Database.BatchableContext bc) {
+        User manager = [
+            SELECT Name, Email
+            FROM User
+            WHERE UserRole.Name = 'Sales Manager'
+            AND IsActive = true
+            LIMIT 1
+        ];
+
+        Messaging.SingleEmailMessage mail = new Messaging.SingleEmailMessage();
+        mail.setToAddresses(new String[]{manager.Email});
+        mail.setSubject('Daily Opportunity Summary');
+
+        String body = 'Daily Opportunity Summary\n\n';
+
+        for (String s : summaries) {
+            body += s + '\n';
+        }
+
+        if (summaries.isEmpty()) {
+            body += 'No opportunities created today.';
+        }
+
+        mail.setPlainTextBody(body);
+        Messaging.sendEmail(new Messaging.SingleEmailMessage[]{mail});
+    }
+
+    global void execute(SchedulableContext sc) {
+        Database.executeBatch(new DailyOpportunitySummaryBatch(), 200);
+    }
+}
+
+10. Ctrl + S
+11. Open Developer Console → Debug → Open Execute Anonymous Window.
+12. Database.executeBatch(new DailyOpportunitySummaryBatch(), 200);
+13. Click Execute.
+
+___________________________________________________________________________________________________________________________________
+
+
+# 13
+
+Developer Console → File → New → Apex Class
+Name: OpportunitySharingHelper
+
+public class OpportunitySharingHelper {
+    public static void shareRecords(List<Opportunity> opps) {
+        Set<Id> accIds = new Set<Id>();
+        for (Opportunity o : opps)
+            if (o.AccountId != null) accIds.add(o.AccountId);
+        List<OpportunityShare> shares = new List<OpportunityShare>();
+        for (AccountTeamMember m : [
+            SELECT AccountId, UserId, OpportunityAccessLevel
+            FROM AccountTeamMember
+            WHERE AccountId IN :accIds
+        ]) {
+            for (Opportunity o : opps) {
+                if (o.AccountId == m.AccountId &&
+                    m.OpportunityAccessLevel != 'None' &&
+                    o.OwnerId != m.UserId) {
+                    shares.add(new OpportunityShare(
+                        OpportunityId = o.Id,
+                        UserOrGroupId = m.UserId,
+                        OpportunityAccessLevel = m.OpportunityAccessLevel,
+                        RowCause = Schema.OpportunityShare.RowCause.Manual
+                    ));
+                }
+            }
+        }
+        if (!shares.isEmpty())
+            Database.insert(shares, false);
+    }
+}
+Ctrl + S
+File → New → Apex Trigger.
+Name: OpportunityTeamSharingTrigger
+sObject: Opportunity
+
+trigger OpportunityTeamSharingTrigger
+on Opportunity (after insert) {
+
+    OpportunitySharingHelper.shareRecords(Trigger.new);
+}
+Ctrl + S
+
+___________________________________________________________________________________________________________________________________
+
+# 14
+
+1. Go to Setup → Object Manager.
+2. Click Create → Custom Object.
+3. Enter the following details:
+        Field	            Value
+        Label	            Product Inventory
+        Plural Label	    Product Inventories
+        Object Name	        Product_Inventory
+        Record Name	        Inventory Name
+        Data Type	        Text
+4. Click Save.
+5. Click Fields & Relationships.
+6. Click New.
+7. Select Number → Next.
+8. Enter:
+       Field Label: Available Quantity
+       Length: 18
+       Decimal Places: 0
+9. Click Next → Next → Save.
+10. Create Location
+11. Click New again.
+12. Select Text → Next.
+13. Enter:
+       Field Label: Location
+       Length: 100
+14. Click Next → Next → Save.
+
+
+1. Go to Setup → Object Manager.
+2. Click Create → Custom Object.
+3. Enter these details:
+        Field	        Value
+        Label	        Order Item
+        Plural Label	Order Items
+        Object Name	    Order_Item
+        Record Name	    Order Item Name
+        Data Type	    Text
+4. Click Save.
+5. Open Order Item → Fields & Relationships → New.
+6. 
+Data Type: Number
+Field Label: Quantity
+Decimal Places: 0
+Click Next → Next → Save.
+
+Data Type: Lookup Relationship
+Related To: Product Inventory
+Field Label: Product Inventory
+Click Next → Next → Save.
+7. Open Gear Icon → Developer Console.
+8. Click File → New → Apex Trigger.
+9. Enter:
+        Trigger Name: InventoryUpdateTrigger
+        sObject: Order_Item__c
+10. Click Submit.
+
+trigger InventoryUpdateTrigger on Order_Item__c (after insert, after delete) {
+
+    Map<Id, Decimal> quantities = new Map<Id, Decimal>();
+
+    if (Trigger.isInsert) {
+        for (Order_Item__c item : Trigger.new) {
+            quantities.put(
+                item.Product_Inventory__c,
+                (quantities.containsKey(item.Product_Inventory__c)
+                    ? quantities.get(item.Product_Inventory__c) : 0)
+                - item.Quantity__c
+            );
+        }
+    }
+
+    if (Trigger.isDelete) {
+        for (Order_Item__c item : Trigger.old) {
+            quantities.put(
+                item.Product_Inventory__c,
+                (quantities.containsKey(item.Product_Inventory__c)
+                    ? quantities.get(item.Product_Inventory__c) : 0)
+                + item.Quantity__c
+            );
+        }
+    }
+
+    List<Product_Inventory__c> stocks = [
+        SELECT Id, Available_Quantity__c
+        FROM Product_Inventory__c
+        WHERE Id IN :quantities.keySet()
+    ];
+
+    for (Product_Inventory__c stock : stocks) {
+        stock.Available_Quantity__c =
+            stock.Available_Quantity__c + quantities.get(stock.Id);
+    }
+
+    update stocks;
+}
+
+Ctrl + S
+
+
+___________________________________________________________________________________________________________________________________
+
+# 15
+
+1. Open Salesforce Developer Console.
+2. Click File → New → Apex Class.
+3. Enter class name:
+        LeadSourceController
+4. Click OK.
+
+public with sharing class LeadSourceController {
+    public class LeadSourceData {
+        @AuraEnabled
+        public String leadSource;
+        @AuraEnabled
+        public Integer leadCount;
+        public LeadSourceData(String source, Integer count) {
+            leadSource = source;
+            leadCount = count;
+        }
+    }
+    @AuraEnabled(cacheable=true)
+    public static List<LeadSourceData> getOpenLeadsBySource() {
+        List<LeadSourceData> results =
+            new List<LeadSourceData>();
+        List<AggregateResult> groupedLeads = [
+            SELECT LeadSource, COUNT(Id) total
+            FROM Lead
+            WHERE IsConverted = false
+            AND Status != 'Closed - Not Converted'
+            GROUP BY LeadSource
+        ];
+        for (AggregateResult ar : groupedLeads) {
+            String source = (String) ar.get('LeadSource');
+            if (String.isBlank(source)) {
+                source = 'Other';
+            }
+            Integer count = (Integer) ar.get('total');
+            results.add(new LeadSourceData(source, count));
+        }
+        return results;
+    }
+}
+5. Ctrl + S
+
+
+Step 1: Create a Report
+        1. Open Salesforce.
+        2. Click the App Launcher (9 dots).
+        3. Open Sales.
+        4. Click the Reports tab.
+        5. Click New Report.
+        6. Search for and select Leads.
+        7. Click Start Report.
+Step 2: Filter Open Leads
+    In the Filters panel:
+        1. Select Show Me → All Leads.
+        2. Keep Date as Create Date.
+        3. Keep Range as All Time.
+        6. Click Apply.
+Step 3: Group by Lead Source
+        1. Open the Outline panel.
+        2. Find Group Rows.
+        3. Click Add Group.
+        4. Select Lead Source.
+        5. Click Save and Run.
+        6. Click Edit.
+        7. After run button see below gear icon click that>
+        8. click Donut and save & Run.
